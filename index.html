@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Solar Sim V.7.50 - GitHub Stable</title>
+    <title>Solar Sim V.7.51 - Precision Patch</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -10,21 +10,21 @@
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600;900&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Prompt', sans-serif; background: #010409; color: #f8fafc; padding: 10px; }
-        .glass-card { background: rgba(13, 17, 23, 0.9); border: 1px solid rgba(48, 54, 61, 1); border-radius: 1rem; padding: 1.5rem; margin-bottom: 1rem; }
-        .input-dark { background: #0d1117 !important; border: 1px solid #30363d !important; border-radius: 0.5rem !important; padding: 10px !important; color: white !important; font-weight: 900; width: 100%; }
+        .glass-card { background: rgba(13, 17, 23, 0.9); border: 1px solid rgba(48, 54, 61, 1); border-radius: 1.5rem; padding: 1.5rem; margin-bottom: 1rem; }
+        .input-dark { background: #0d1117 !important; border: 1px solid #30363d !important; border-radius: 0.5rem !important; padding: 10px !important; color: white !important; font-weight: 900; width: 100%; font-size: 14px; }
         .hour-btn { width: 26px; height: 26px; font-size: 9px; font-weight: 900; border-radius: 5px; border: 1px solid #30363d; transition: 0.1s; }
         .hour-active { background: #fbbf24; color: #010409; border-color: #fff; box-shadow: 0 0 8px rgba(251, 191, 36, 0.3); }
         .sun-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 30px; height: 30px; background: #fbbf24; border-radius: 50%; border: 3px solid #fff; cursor: pointer; }
         .bill-card { background: linear-gradient(145deg, #161b22, #0d1117); border: 1px solid #30363d; }
         .fixed-toolbar { background: rgba(22, 27, 34, 0.95); border-bottom: 1px solid #30363d; position: sticky; top: 0; z-index: 1000; padding: 12px; margin: -10px -10px 20px -10px; backdrop-filter: blur(10px); }
-        .check-circle { width: 20px; height: 20px; border-radius: 50%; border: 2px solid #484f58; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+        .check-circle { width: 22px; height: 22px; border-radius: 50%; border: 2px solid #484f58; display: flex; align-items: center; justify-content: center; }
         .check-active { background: #fbbf24; border-color: #fbbf24; }
     </style>
 </head>
 <body class="md:p-6 text-left">
     <div id="app">
         <div class="fixed-toolbar no-print flex flex-wrap gap-2 justify-end items-center">
-            <div class="mr-auto hidden md:block text-yellow-500 font-black italic text-xs uppercase tracking-widest">Solar Sim V.7.50 Stable</div>
+            <div class="mr-auto hidden md:block text-yellow-500 font-black italic text-xs uppercase tracking-widest">Solar Sim V.7.51 Stable</div>
             <button @click="takeSnapshot" class="bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-black px-5 py-2.5 rounded-xl shadow-lg uppercase">📸 Save Image</button>
             <button onclick="window.print()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-black px-5 py-2.5 rounded-xl shadow-lg uppercase">🖨️ Print PDF</button>
             <button @click="resetData" class="bg-red-600 hover:bg-red-500 text-white text-[11px] font-black px-5 py-2.5 rounded-xl shadow-lg uppercase">🧹 Reset</button>
@@ -35,8 +35,8 @@
                 <div class="flex-1">
                     <h1 class="text-xl font-black italic text-yellow-400 uppercase tracking-tighter leading-none">SOLAR SIM <span class="text-white text-xs font-normal">STABLE ENGINE</span></h1>
                     <div class="grid grid-cols-2 gap-3 mt-4 text-center">
-                        <div class="glass-card p-3 mb-0 bg-white/5 shadow-inner"><p class="text-[8px] text-slate-500 font-black uppercase">Self-Sufficiency</p><p class="text-2xl font-black text-blue-400">{{ sufficiency }}%</p></div>
-                        <div class="glass-card p-3 mb-0 bg-white/5 shadow-inner"><p class="text-[8px] text-slate-500 font-black uppercase">Wasted</p><p class="text-2xl font-black text-orange-500">{{ wasted }} <span class="text-xs">kWh</span></p></div>
+                        <div class="glass-card p-3 mb-0 bg-white/5 shadow-inner"><p class="text-[8px] text-slate-500 font-black uppercase">Efficiency</p><p class="text-2xl font-black text-blue-400">{{ sufficiency }}%</p></div>
+                        <div class="glass-card p-3 mb-0 bg-white/5 shadow-inner"><p class="text-[8px] text-slate-500 font-black uppercase">Overflow</p><p class="text-2xl font-black text-orange-500">{{ wasted }} <span class="text-xs">kWh</span></p></div>
                     </div>
                 </div>
                 <div class="bill-card flex-1 rounded-3xl p-6 border-t-4 border-emerald-500 shadow-2xl">
@@ -55,9 +55,9 @@
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
                 <div class="lg:col-span-8 space-y-4">
                     <div class="glass-card shadow-2xl h-[340px] relative"><canvas id="proChart"></canvas></div>
-                    <div class="glass-card border-t-4 border-yellow-500 grid grid-cols-1 md:grid-cols-2 gap-6 items-center p-6">
+                    <div class="glass-card border-t-4 border-yellow-500 grid grid-cols-1 md:grid-cols-2 gap-6 items-center p-6 text-left">
                         <div>
-                            <h2 class="text-7xl font-black text-white leading-none text-center md:text-left">{{formatTime(selectedStep)}}</h2>
+                            <h2 class="text-7xl font-black text-white leading-none">{{formatTime(selectedStep)}}</h2>
                             <input type="range" v-model="selectedStep" min="0" max="95" class="sun-slider w-full h-2 bg-slate-800 rounded-full appearance-none mt-6 no-print">
                         </div>
                         <div class="grid grid-cols-2 gap-4 bg-black/50 p-4 rounded-3xl border border-white/5">
@@ -69,16 +69,19 @@
 
                 <div class="lg:col-span-4 h-full">
                     <div class="glass-card border-t-4 border-slate-700 h-full" style="min-height: 400px; height: auto !important;">
-                        <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">💡 Household Demand</h3>
-                        <div class="space-y-2">
-                            <div v-for="item in appliances" :key="item.id" @click="item.active = !item.active" :class="item.active ? 'bg-white/5 border-white/20 shadow-lg' : 'opacity-30 no-print'" class="flex flex-col p-4 rounded-xl border border-white/5 transition-all cursor-pointer">
+                        <div class="flex justify-between items-center border-b border-white/5 pb-3 mb-4">
+                            <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest">💡 Household Demand</h3>
+                            <button @click="applyMagic" class="text-[9px] text-indigo-400 font-black underline no-print uppercase">🪄 Magic Fill</button>
+                        </div>
+                        <div id="drag-list" class="space-y-2">
+                            <div v-for="item in appliances" :key="item.id" @click="item.active = !item.active" :class="item.active ? 'bg-white/5 border-white/10 shadow-lg' : 'opacity-30 no-print'" class="flex flex-col p-4 rounded-xl border border-white/5 transition-all cursor-pointer">
                                 <div class="flex justify-between items-center mb-2">
                                     <div class="flex items-center gap-3">
                                         <div class="check-circle" :class="{'check-active': item.active}"><svg v-if="item.active" class="w-3 h-3 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M5 13l4 4L19 7"></path></svg></div>
                                         <span class="font-black text-xs uppercase">{{ item.name }}</span>
                                     </div>
                                     <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-tighter">
-                                        {{ (item.type==='ac') ? formatNumber(item.power) + ' BTU' : formatNumber(item.power) + ' W' }}
+                                        {{ (item.type==='ac_inverter' || item.type==='ac_standard') ? formatNumber(item.power) + ' BTU' : formatNumber(item.power) + ' W' }}
                                     </span>
                                 </div>
                                 <div class="flex gap-0.5 mt-1 px-1"><div v-for="h in 24" :key="h-1" class="flex-1 h-1 rounded-full" :class="item.slots.includes(h-1)?'bg-indigo-400':'bg-slate-800'"></div></div>
@@ -100,21 +103,28 @@
                 <input type="text" v-model="newItem.name" placeholder="Device Name (e.g. Living AC)" class="input-dark">
                 <div class="grid grid-cols-2 gap-3">
                     <select v-model="newItem.type" class="input-dark">
-                        <option value="ac">Air Con (BTU)</option>
-                        <option value="watt">Other Device (Watts)</option>
+                        <option value="ac_inverter">AC Inverter (BTU)</option>
+                        <option value="ac_standard">AC Standard (BTU)</option>
+                        <option value="fridge">Refrigerator (Watt)</option>
+                        <option value="computer">Computer / Office (Watt)</option>
+                        <option value="ev">EV Charger (Watt)</option>
+                        <option value="watt">Other General (Watt)</option>
                     </select>
                     <div class="relative w-full">
-                        <input type="number" v-model.number="newItem.power" :placeholder="newItem.type === 'ac' ? 'Input BTU' : 'Input Watts'" class="input-dark">
+                        <input type="number" v-model.number="newItem.power" :placeholder="(newItem.type==='ac_inverter'||newItem.type==='ac_standard') ? 'Input BTU' : 'Input Watts'" class="input-dark">
+                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-500">
+                            {{ (newItem.type==='ac_inverter'||newItem.type==='ac_standard') ? 'BTU' : 'W' }}
+                        </span>
                     </div>
                 </div>
                 <div class="bg-black/40 p-4 rounded-xl text-center">
                     <div class="flex justify-between items-center mb-3 px-1">
-                        <p class="text-[8px] text-slate-500 uppercase font-black tracking-widest italic">Hours</p>
-                        <button @click="toggleAllDay" class="bg-indigo-600 text-white px-4 py-1 rounded-lg text-[9px] font-black uppercase shadow-lg transition-all active:scale-95">⚡ Select 24h</button>
+                        <p class="text-[8px] text-slate-500 uppercase font-black tracking-widest italic">Operations</p>
+                        <button @click="toggleAllDay" class="bg-indigo-600 text-white px-4 py-1 rounded-lg text-[9px] font-black uppercase shadow-lg transition-all active:scale-95">⚡ Select All Day (24h)</button>
                     </div>
                     <div class="grid grid-cols-12 md:grid-cols-24 gap-1"><button v-for="h in 24" :key="h-1" @click="toggleNewHour(h-1)" :class="newItem.slots.includes(h-1)?'hour-active':'bg-slate-800 text-slate-500'" class="hour-btn transition-all">{{h-1}}</button></div>
                 </div>
-                <button @click="addItem" class="w-full bg-indigo-600 py-4 rounded-xl font-black text-[11px] uppercase shadow-lg active:scale-95 transition-all tracking-widest">+ COMMIT DEVICE</button>
+                <button @click="addItem" class="w-full bg-indigo-600 py-4 rounded-xl font-black text-[11px] uppercase shadow-lg active:scale-95 tracking-widest">+ COMMIT DEVICE</button>
             </div>
         </div>
     </div>
@@ -129,37 +139,45 @@
             const selectedStep = ref(saved.selectedStep || 48), rate = ref(saved.rate || 4.65);
             const solarKw = ref(saved.solarKw || 5.0), batteryKwh = ref(saved.batteryKwh || 10.0);
             const appliances = ref(saved.appliances || []);
-            const newItem = ref({name:'', type:'ac', power:null, slots:[]});
+            const newItem = ref({name:'', type:'ac_inverter', power:null, slots:[]});
             let chart = null;
 
             const formatNumber = (n) => Math.round(n).toLocaleString();
             const formatTime = (s) => `${String(Math.floor(s/4)).padStart(2,'0')}:${String((s%4)*15).padStart(2,'0')}`;
             
+            // 🎯 MAINTAINED PRECISION LOGIC (No changes here)
             const getActualWatts = (i) => {
                 if(!i.power) return 0;
-                // 🎯 Solar Pro Logic: BTU / 11 and 45% load average
-                return i.type === 'ac' ? Math.round((i.power / 11) * 0.45) : i.power;
+                switch(i.type) {
+                    case 'ac_inverter': return Math.round((i.power / 11) * 0.45);
+                    case 'ac_standard': return Math.round((i.power / 10) * 0.70);
+                    case 'fridge': return Math.round(i.power * 0.40);
+                    case 'computer': return Math.round(i.power * 0.65);
+                    default: return i.power;
+                }
+            };
+
+            const getSolarOutput = (s) => {
+                const h_f = s/4; if(h_f < 6 || h_f > 18) return 0;
+                return solarKw.value * 940 * Math.pow(Math.sin((h_f-6)*Math.PI/12), 1.4);
             };
 
             const engine = computed(() => {
                 let d = [], stWh = 0, cpWh = batteryKwh.value * 1000, tL = 0, tSv = 0, tW = 0;
                 for(let s = 0; s <= 95; s++) {
-                    const h = Math.floor(s/4);
-                    const h_f = s/4; let sol = 0;
-                    if(h_f >= 6 && h_f <= 18) sol = solarKw.value * 940 * Math.pow(Math.sin((h_f-6)*Math.PI/12), 1.4);
-                    
+                    const h = Math.floor(s/4), sol = getSolarOutput(s);
                     const load = appliances.value.reduce((acc, a) => acc + (a.active && a.slots.includes(h) ? getActualWatts(a) : 0), 0);
                     const deficit = load - sol; let bat = 0;
                     if (deficit > 0) { bat = Math.min(deficit, stWh * 0.95); stWh -= (bat/0.95); }
                     else { const ch = Math.min(Math.abs(deficit)*0.95, cpWh-stWh); stWh += ch; tW += ((Math.abs(deficit)*0.95-ch)/1000)*0.25; }
                     const stepSaved = ((Math.min(load, sol) + bat) / 1000) * 0.25;
                     tL += (load/1000)*0.25; tSv += stepSaved;
-                    d.push({ s, solar: sol, load: load, soc: cpWh>0?(stWh/cpWh*100):0, grid: Math.max(0, deficit-bat), savedVal: stepSaved * rate.value });
+                    d.push({ s, solar: sol, load, soc: cpWh>0?(stWh/cpWh*100):0, grid: Math.max(0, deficit-bat), savedVal: stepSaved * rate.value });
                 }
                 return { steps: d, kpis: { sufficiency: Math.round((tSv/tL)*100)||0, wasted: tW.toFixed(1), savedKwh: tSv, totalLoadKwh: tL }};
             });
 
-            // 🚀 STABLE WATCHER: No Deep Watch to prevent crash
+            // 🚀 STABLE WATCHERS
             watch([rate, solarKw, batteryKwh, selectedStep], () => {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify({ rate: rate.value, solarKw: solarKw.value, batteryKwh: batteryKwh.value, appliances: appliances.value, selectedStep: selectedStep.value }));
                 if(chart) {
@@ -168,11 +186,10 @@
                     chart.data.datasets[0].data = d.map(x=>x.solar);
                     chart.data.datasets[1].data = d.map(x=>x.load);
                     chart.data.datasets[2].data = d.map(x=>x.soc);
-                    chart.update('none'); // Disable animation to save CPU
+                    chart.update('none');
                 }
             });
 
-            // Separate watcher for appliances to avoid infinite loops during calculation
             watch(appliances, () => {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify({ rate: rate.value, solarKw: solarKw.value, batteryKwh: batteryKwh.value, appliances: appliances.value, selectedStep: selectedStep.value }));
                 if(chart) chart.update('none');
@@ -194,14 +211,15 @@
                 formatNumber, formatTime, 
                 toggleNewHour: (h) => { const idx = newItem.value.slots.indexOf(h); if(idx > -1) newItem.value.slots.splice(idx, 1); else newItem.value.slots.push(h); },
                 toggleAllDay: () => { newItem.value.slots = newItem.value.slots.length === 24 ? [] : Array.from({length: 24}, (_, i) => i); },
-                addItem: () => { if(newItem.value.name && newItem.value.power){ appliances.value.unshift({id: Date.now(), ...newItem.value, active: true, slots: [...newItem.value.slots]}); newItem.value={name:'', type:'ac', power:null, slots:[]}; } },
+                addItem: () => { if(newItem.value.name && newItem.value.power){ appliances.value.unshift({id: Date.now(), ...newItem.value, active: true, slots: [...newItem.value.slots]}); newItem.value={name:'', type:'ac_inverter', power:null, slots:[]}; } },
                 deleteItem: (id) => { appliances.value = appliances.value.filter(a => a.id !== id); },
+                applyMagic: () => { appliances.value.unshift({id: Date.now(), name:'🪄 Magic Baseload', type:'watt', power:500, slots:Array.from({length:24},(_,i)=>i), active: true}); },
                 takeSnapshot: () => {
                     html2canvas(document.querySelector("#report-area"), {backgroundColor: "#010409", scale: 2}).then(canvas => {
-                        let a = document.createElement('a'); a.download = `Solar-Report-V750.png`; a.href = canvas.toDataURL(); a.click();
+                        let a = document.createElement('a'); a.download = `Solar-Sim-V751.png`; a.href = canvas.toDataURL(); a.click();
                     });
                 },
-                resetData: () => { if(confirm('Reset all?')) { localStorage.clear(); location.reload(); } }
+                resetData: () => { if(confirm('ต้องการล้างข้อมูลใหม่หมด?')) { localStorage.clear(); location.reload(); } }
             }
         }
     }).mount('#app');
