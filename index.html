@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Solar Sim V.7.26 - Redemption Stable</title>
+    <title>Solar Sim V.7.27 - Final Stable</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -14,22 +14,23 @@
         .glass-card { background: rgba(13, 17, 23, 0.9); border: 1px solid rgba(48, 54, 61, 1); border-radius: 1.5rem; padding: 1.5rem; margin-bottom: 1rem; }
         .input-dark { background: #0d1117 !important; border: 1px solid #30363d !important; border-radius: 0.5rem !important; padding: 10px !important; color: white !important; font-weight: 900; width: 100%; font-size: 14px; }
         .hour-btn { width: 26px; height: 26px; font-size: 9px; font-weight: 900; border-radius: 5px; border: 1px solid #30363d; transition: 0.1s; }
-        .hour-active { background: #fbbf24; color: #010409; border-color: #fff; }
+        .hour-active { background: #fbbf24; color: #010409; border-color: #fff; box-shadow: 0 0 8px rgba(251, 191, 36, 0.3); }
         .sun-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 30px; height: 30px; background: #fbbf24; border-radius: 50%; border: 3px solid #fff; }
         .bill-card { background: linear-gradient(145deg, #161b22, #0d1117); border: 1px solid #30363d; }
-        .drag-handle { cursor: grab !important; padding: 10px; color: #484f58; font-size: 20px; touch-action: none; }
+        .drag-handle { cursor: grab !important; padding: 10px; color: #fbbf24; font-size: 20px; touch-action: none; }
         .check-circle { width: 24px; height: 24px; border-radius: 50%; border: 2px solid #484f58; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .check-active { background: #fbbf24; border-color: #fbbf24; }
         .device-card-active { background: rgba(251, 191, 36, 0.05) !important; border-color: rgba(251, 191, 36, 0.3) !important; }
         .no-limit-container { height: auto !important; max-height: none !important; overflow: visible !important; }
         
-        /* 🖨️ Print Style Optimizer */
+        /* 🛠️ ป้องกันปุ่มหายตอน Hover */
+        .btn-stable { transition: all 0.2s; position: relative; z-index: 50; }
+
         @media print {
             body { background: white !important; color: black !important; padding: 0; }
             .no-print { display: none !important; }
             .glass-card { background: white !important; border: 1px solid #ddd !important; box-shadow: none !important; color: black !important; }
             h1, h2, h3, p, span, label { color: black !important; }
-            .device-card-active { background: #f8f8f8 !important; border: 1px solid #ccc !important; }
             .bill-card { background: white !important; border: 2px solid #000 !important; }
         }
     </style>
@@ -37,31 +38,32 @@
 <body class="md:p-6">
     <div id="app" class="max-w-7xl mx-auto space-y-4">
         
-        <div class="flex flex-wrap gap-2 no-print justify-end mb-2">
-            <button @click="openPorter" class="bg-purple-600/20 hover:bg-purple-600 text-[10px] font-black px-4 py-2 rounded-xl border border-purple-500/50 transition-all uppercase">📦 Transfer</button>
-            <button @click="importFromMain" class="bg-indigo-600/20 hover:bg-indigo-600 text-[10px] font-black px-4 py-2 rounded-xl border border-indigo-500/50 transition-all uppercase">🔄 Sync Main</button>
-            <button @click="takeSnapshot" class="bg-indigo-600 hover:bg-indigo-500 text-[10px] font-black px-4 py-2 rounded-xl shadow-lg uppercase">📸 Snapshot</button>
-            <button onclick="window.print()" class="bg-emerald-600 hover:bg-emerald-500 text-[10px] font-black px-4 py-2 rounded-xl shadow-lg uppercase">🖨️ Print PDF</button>
-            <button @click="resetData" class="bg-red-900/40 hover:bg-red-900 text-[10px] font-black px-4 py-2 rounded-xl border border-red-500/20 uppercase">🧹 Reset</button>
+        <div class="flex flex-wrap gap-2 no-print justify-end items-center bg-slate-900/50 p-4 rounded-2xl border border-white/5 mb-4">
+            <span class="mr-auto text-[10px] font-black text-slate-500 tracking-widest uppercase">Admin Tools:</span>
+            <button @click="openPorter" class="btn-stable bg-purple-600 hover:bg-purple-500 text-white text-[10px] font-black px-4 py-2 rounded-xl shadow-lg uppercase">📦 Transfer</button>
+            <button @click="importFromMain" class="btn-stable bg-indigo-600 hover:bg-indigo-500 text-white text-[10px] font-black px-4 py-2 rounded-xl shadow-lg uppercase">🔄 Sync Main</button>
+            <button @click="takeSnapshot" class="btn-stable bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-black px-4 py-2 rounded-xl shadow-lg uppercase">📸 Snapshot</button>
+            <button onclick="window.print()" class="btn-stable bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-black px-4 py-2 rounded-xl shadow-lg uppercase">🖨️ Print PDF</button>
+            <button @click="resetData" class="btn-stable bg-red-600 hover:bg-red-500 text-white text-[10px] font-black px-4 py-2 rounded-xl shadow-lg uppercase">🧹 Reset</button>
         </div>
 
         <div id="report-area" class="p-2 no-limit-container">
             <div class="flex flex-col lg:flex-row justify-between items-stretch gap-4 mb-4">
                 <div class="flex-1 text-left">
-                    <h1 class="text-xl font-black italic text-yellow-400 uppercase tracking-tighter leading-none">SOLAR SIM <span class="text-white text-xs font-normal">V.7.26 STABLE</span></h1>
-                    <p class="text-[9px] text-slate-500 font-bold uppercase italic tracking-widest mt-1">Full System Fixed | Monthly Bill Active</p>
+                    <h1 class="text-xl font-black italic text-yellow-400 uppercase tracking-tighter leading-none">SOLAR SIM <span class="text-white text-xs font-normal">V.7.27 STABLE FINAL</span></h1>
+                    <p class="text-[9px] text-slate-500 font-bold uppercase italic tracking-widest mt-1">Full Visibility | Verified Monthly Billing</p>
                     <div class="grid grid-cols-2 gap-3 mt-4">
-                        <div class="kpi-box text-center p-3 rounded-2xl border border-white/5 bg-white/5 shadow-inner"><p class="text-[8px] text-slate-500 font-black uppercase">Self-Sufficiency</p><p class="text-2xl font-black text-blue-400">{{ sufficiency }}%</p></div>
-                        <div class="kpi-box text-center p-3 rounded-2xl border border-white/5 bg-white/5 shadow-inner"><p class="text-[8px] text-slate-500 font-black uppercase">Overflow</p><p class="text-2xl font-black text-orange-500">{{ wasted }} <span class="text-xs">kWh</span></p></div>
+                        <div class="kpi-box text-center p-3 rounded-2xl border border-white/5 bg-white/5 shadow-inner"><p class="text-[8px] text-slate-500 font-black uppercase tracking-tighter">Self-Sufficiency</p><p class="text-2xl font-black text-blue-400">{{ sufficiency }}%</p></div>
+                        <div class="kpi-box text-center p-3 rounded-2xl border border-white/5 bg-white/5 shadow-inner"><p class="text-[8px] text-slate-500 font-black uppercase tracking-tighter">Overflow</p><p class="text-2xl font-black text-orange-500">{{ wasted }} <span class="text-xs">kWh</span></p></div>
                     </div>
                 </div>
                 
                 <div class="bill-card flex-1 rounded-3xl p-6 border-t-4 border-emerald-500 shadow-2xl text-left">
                     <h3 class="text-xs font-black text-emerald-400 uppercase italic mb-3">Estimated Monthly Bill</h3>
                     <div class="space-y-2">
-                        <div class="flex justify-between border-b border-white/5 pb-1"><span class="text-[10px] text-slate-400">Original Bill</span><span class="text-lg font-black text-slate-400 line-through">฿{{ formatNumber(monthlyOriginal) }}</span></div>
-                        <div class="flex justify-between border-b border-white/5 pb-1"><span class="text-[10px] text-emerald-400 font-bold">Solar Bill</span><span class="text-2xl font-black text-white">฿{{ formatNumber(monthlyNew) }}</span></div>
-                        <div class="flex justify-between items-center bg-emerald-500/10 p-3 rounded-xl border border-emerald-500/20"><span class="text-[11px] text-emerald-400 font-black">Savings</span><span class="text-3xl font-black text-emerald-400 italic">฿{{ formatNumber(monthlySavings) }}</span></div>
+                        <div class="flex justify-between border-b border-white/5 pb-1"><span class="text-[10px] text-slate-400 uppercase">Original Bill</span><span class="text-lg font-black text-slate-400 line-through">฿{{ formatNumber(monthlyOriginal) }}</span></div>
+                        <div class="flex justify-between border-b border-white/5 pb-1"><span class="text-[10px] text-emerald-400 font-bold uppercase">Solar Bill</span><span class="text-2xl font-black text-white">฿{{ formatNumber(monthlyNew) }}</span></div>
+                        <div class="flex justify-between items-center bg-emerald-500/10 p-3 rounded-xl border border-emerald-500/20"><span class="text-[11px] text-emerald-400 font-black uppercase tracking-tighter">Monthly Savings</span><span class="text-3xl font-black text-emerald-400 italic">฿{{ formatNumber(monthlySavings) }}</span></div>
                     </div>
                 </div>
             </div>
@@ -70,13 +72,13 @@
                 <div class="lg:col-span-8 space-y-4">
                     <div class="glass-card shadow-2xl h-[300px] relative"><canvas id="proChart"></canvas></div>
                     <div class="glass-card border-t-4 border-yellow-500 grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                        <div>
+                        <div class="text-center md:text-left">
                             <h2 class="text-7xl font-black italic text-white leading-none">{{formatTime(selectedStep)}}</h2>
                             <input type="range" v-model="selectedStep" min="0" max="95" class="sun-slider w-full h-2 bg-slate-800 rounded-full appearance-none mt-6 no-print">
                         </div>
                         <div class="grid grid-cols-2 gap-4 bg-black/50 p-4 rounded-3xl">
-                            <div><p class="text-[8px] font-black text-emerald-400 uppercase">Hr Saving</p><p class="text-2xl font-black text-white">฿{{(currentStepData.savedVal).toFixed(2)}}</p></div>
-                            <div><p class="text-[8px] font-black text-red-400 uppercase">Hr Cost</p><p class="text-2xl font-black italic" :class="currentStepData.grid > 0 ? 'text-red-400' : 'text-emerald-400'">{{currentStepData.grid > 0 ? '฿'+(currentStepData.grid/1000*rate).toFixed(2) : 'FREE'}}</p></div>
+                            <div><p class="text-[8px] font-black text-emerald-400 uppercase italic">Hr Saved</p><p class="text-2xl font-black text-white">฿{{(currentStepData.savedVal).toFixed(2)}}</p></div>
+                            <div><p class="text-[8px] font-black text-red-400 uppercase italic">Hr Cost</p><p class="text-2xl font-black italic" :class="currentStepData.grid > 0 ? 'text-red-400' : 'text-emerald-400'">{{currentStepData.grid > 0 ? '฿'+(currentStepData.grid/1000*rate).toFixed(2) : 'FREE'}}</p></div>
                         </div>
                     </div>
                 </div>
@@ -84,7 +86,7 @@
                 <div class="lg:col-span-4 no-limit-container">
                     <div class="glass-card border-t-4 border-slate-700 no-limit-container h-full">
                         <div class="flex justify-between items-center border-b border-white/5 pb-2 mb-4">
-                            <h3 class="text-[10px] font-black text-slate-400 uppercase italic tracking-widest">💡 DEMAND PROFILES</h3>
+                            <h3 class="text-[10px] font-black text-slate-400 uppercase italic">💡 DEMAND PROFILES</h3>
                             <button @click="showMagic = true" class="text-[9px] text-indigo-400 font-black underline no-print">MAGIC 🪄</button>
                         </div>
                         <div id="drag-list" class="space-y-2">
@@ -100,7 +102,7 @@
                                         </div>
                                         <span class="font-black text-xs">{{ item.name }}</span>
                                     </div>
-                                    <span class="text-[9px] font-bold text-indigo-400 uppercase tracking-tighter">{{ formatNumber(getWatts(item)) }} W</span>
+                                    <span class="text-[10px] font-bold text-indigo-400 uppercase">{{ formatNumber(getWatts(item)) }} W</span>
                                 </div>
                                 <div class="flex gap-0.5 mt-1 px-1"><div v-for="h in 24" :key="h-1" class="flex-1 h-1 rounded-full" :class="item.slots.includes(h-1)?'bg-indigo-400':'bg-slate-800'"></div></div>
                                 <div class="mt-3 text-right no-print"><button @click.stop="deleteItem(item.id)" class="text-red-900 text-[8px] font-black uppercase opacity-60">Delete</button></div>
@@ -111,13 +113,14 @@
             </div>
         </div>
 
-        <div v-if="showPorter" class="fixed inset-0 bg-black/95 z-[2000] flex justify-center items-center p-4" @click.self="showPorter = false">
-            <div class="glass-card max-w-2xl w-full border-purple-500/50 p-8 space-y-4 shadow-2xl">
-                <h2 class="text-xl font-black italic text-purple-400 uppercase">Universal Transfer 📦</h2>
-                <textarea v-model="porterString" class="w-full h-48 bg-black/50 border border-white/10 rounded-xl p-4 text-[10px] font-mono text-emerald-400 break-all" placeholder="Code will appear here..."></textarea>
+        <div v-if="showPorter" class="fixed inset-0 bg-black/95 z-[3000] flex justify-center items-center p-4" @click.self="showPorter = false">
+            <div class="glass-card max-w-2xl w-full border-purple-500 p-8 space-y-4 shadow-[0_0_100px_rgba(168,85,247,0.3)]">
+                <h2 class="text-2xl font-black italic text-purple-400 uppercase tracking-tighter">Universal Transfer 📦</h2>
+                <p class="text-xs text-slate-400">คัดลอกรหัสนี้ไปใช้กับ iPad หรือเครื่องอื่นเพื่อดึงข้อมูลเครื่องใช้ไฟฟ้าไปใช้ต่อครับ</p>
+                <textarea v-model="porterString" class="w-full h-48 bg-black border border-purple-500/30 rounded-xl p-4 text-[10px] font-mono text-emerald-400 break-all"></textarea>
                 <div class="grid grid-cols-2 gap-4">
-                    <button @click="copyPorter" class="bg-purple-600 py-3 rounded-xl font-black text-xs uppercase shadow-lg">1. Copy Code</button>
-                    <button @click="importPorter" class="bg-emerald-600 py-3 rounded-xl font-black text-xs uppercase shadow-lg">2. Import Code</button>
+                    <button @click="copyPorter" class="bg-purple-600 py-4 rounded-xl font-black text-xs uppercase shadow-xl hover:bg-purple-500 transition-all">1. Copy Code</button>
+                    <button @click="importPorter" class="bg-emerald-600 py-4 rounded-xl font-black text-xs uppercase shadow-xl hover:bg-emerald-500 transition-all">2. Import Code</button>
                 </div>
                 <button @click="showPorter = false" class="w-full py-2 text-slate-500 text-xs font-black uppercase">Close Window</button>
             </div>
@@ -125,9 +128,9 @@
 
         <div class="glass-card border-t-4 border-indigo-600 space-y-4 no-print text-left">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div><label class="text-[8px] font-black text-slate-500 uppercase">PV (kW)</label><input type="number" v-model.number="solarKw" step="0.1" class="input-dark"></div>
-                <div><label class="text-[8px] font-black text-slate-500 uppercase">Batt (kWh)</label><input type="number" v-model.number="batteryKwh" step="0.1" class="input-dark"></div>
-                <div><label class="text-[8px] font-black text-slate-500 uppercase">Rate (฿)</label><input type="number" v-model.number="rate" step="0.01" class="input-dark"></div>
+                <div><label class="text-[8px] font-black text-slate-500 uppercase ml-1">PV (kW)</label><input type="number" v-model.number="solarKw" step="0.1" class="input-dark"></div>
+                <div><label class="text-[8px] font-black text-slate-500 uppercase ml-1">Batt (kWh)</label><input type="number" v-model.number="batteryKwh" step="0.1" class="input-dark"></div>
+                <div><label class="text-[8px] font-black text-slate-500 uppercase ml-1">Rate (฿)</label><input type="number" v-model.number="rate" step="0.01" class="input-dark"></div>
             </div>
             <div class="pt-4 border-t border-white/5 space-y-4">
                 <input type="text" v-model="newItem.name" placeholder="Device Name" class="input-dark">
@@ -138,14 +141,14 @@
                     <input type="number" v-model.number="newItem.power" placeholder="Watts / BTU" class="input-dark">
                 </div>
                 <div class="bg-black/40 p-4 rounded-xl">
-                    <div class="flex justify-between items-center mb-3"><p class="text-[8px] text-slate-500 font-black uppercase">Operation Slots</p><button @click="toggleAllDay" class="bg-indigo-600 text-white px-4 py-1 rounded-lg text-[9px] font-black">⚡ SELECT ALL DAY</button></div>
+                    <div class="flex justify-between items-center mb-3"><p class="text-[8px] text-slate-500 font-black uppercase">Operation Slots</p><button @click="toggleAllDay" class="bg-indigo-600 text-white px-4 py-1 rounded-lg text-[9px] font-black uppercase">⚡ Select 24h</button></div>
                     <div class="grid grid-cols-12 md:grid-cols-24 gap-1"><button v-for="h in 24" :key="h-1" @click="toggleNewHour(h-1)" :class="newItem.slots.includes(h-1)?'hour-active':'bg-slate-800 text-slate-500'" class="hour-btn">{{h-1}}</button></div>
                 </div>
-                <button @click="addItem" class="w-full bg-indigo-600 py-4 rounded-xl font-black text-[11px] uppercase shadow-lg">+ COMMIT TO REPORT</button>
+                <button @click="addItem" class="w-full bg-indigo-600 py-4 rounded-xl font-black text-[11px] uppercase shadow-lg">+ COMMIT DEVICE</button>
             </div>
         </div>
 
-        <div v-if="showMagic" class="fixed inset-0 bg-black/90 z-[1000] flex justify-center items-center p-6" @click.self="showMagic = false">
+        <div v-if="showMagic" class="fixed inset-0 bg-black/90 z-[3000] flex justify-center items-center p-6" @click.self="showMagic = false">
             <div class="bg-slate-900 p-8 rounded-[40px] border border-indigo-500/30 text-center space-y-5 max-w-sm w-full"><h4 class="font-black text-indigo-400 uppercase border-b border-white/5 pb-2">🪄 Magic Fill</h4><select v-model="magicHome" class="input-dark"><option value="small">Townhome</option><option value="medium">Detached</option><option value="large">Villa</option></select><select v-model="magicFam" class="input-dark"><option value="1-2">1-2 People</option><option value="3-4">3-4 People</option></select><button @click="applyMagic" class="w-full bg-indigo-600 py-4 rounded-xl font-black text-xs uppercase shadow-xl">Generate</button></div>
         </div>
     </div>
@@ -156,7 +159,8 @@
 
     createApp({
         setup() {
-            let raw = localStorage.getItem(MASTER_KEY) || localStorage.getItem('SOLAR_SIM_V77_DATA') || '{}';
+            // ✅ RECOVERY LOGIC (Unified)
+            const raw = localStorage.getItem(MASTER_KEY) || localStorage.getItem('SOLAR_SIM_V77_DATA') || localStorage.getItem('SOLAR_SIM_V718_DATA') || '{}';
             const saved = JSON.parse(raw);
 
             const selectedStep = ref(saved.selectedStep || 48), weather = ref(saved.weather || 'sunny'), rate = ref(saved.rate || 4.65);
@@ -165,7 +169,7 @@
             const showMagic = ref(false), showPorter = ref(false), porterString = ref(''), magicHome = ref('medium'), magicFam = ref('3-4');
             const newItem = ref({name:'', type:'ac_inverter', power:null, slots:[]});
             const weatherOptions = [{id:'sunny',label:'Sunny',icon:'☀️',impact:1.0},{id:'cloudy',label:'Cloudy',icon:'☁️',impact:0.45},{id:'rainy',label:'Rainy',icon:'🌧️',impact:0.15}];
-            let chart = null, sortableInstance = null;
+            let chart = null, sortable = null;
 
             const formatNumber = (n) => Math.round(n).toLocaleString();
             const formatTime = (s) => `${String(Math.floor(s/4)).padStart(2,'0')}:${String((s%4)*15).padStart(2,'0')}`;
@@ -188,13 +192,11 @@
                 return { steps: data, kpis: { sufficiency: Math.round((totalSolarUsed/totalLoad)*100)||0, wasted: totalWasted.toFixed(1), savedKwh: totalSaved, totalLoadKwh: totalLoad }};
             });
 
-            const updateChart = () => { if(chart) { const d = engine.value.steps; chart.data.labels = d.map(x=>formatTime(x.s)); chart.data.datasets[0].data = d.map(x=>x.solar); chart.data.datasets[1].data = d.map(x=>x.load); chart.data.datasets[2].data = d.map(x=>x.soc); chart.update(); } };
-
-            const initSortable = () => { nextTick(() => { const el = document.getElementById('drag-list'); if (el) { if(sortableInstance) sortableInstance.destroy(); sortableInstance = Sortable.create(el, { handle: '.drag-handle', animation: 200, onEnd: (e) => { const list = [...appliances.value]; const item = list.splice(e.oldIndex, 1)[0]; list.splice(e.newIndex, 0, item); appliances.value = list; } }); } }); };
+            const initSortable = () => { nextTick(() => { const el = document.getElementById('drag-list'); if (el) { if(sortable) sortable.destroy(); sortable = Sortable.create(el, { handle: '.drag-handle', animation: 200, onEnd: (e) => { const list = [...appliances.value]; const item = list.splice(e.oldIndex, 1)[0]; list.splice(e.newIndex, 0, item); appliances.value = list; } }); } }); };
 
             watch([weather, rate, solarKw, batteryKwh, appliances, selectedStep], () => {
                 localStorage.setItem(MASTER_KEY, JSON.stringify({ weather: weather.value, rate: rate.value, solarKw: solarKw.value, batteryKwh: batteryKwh.value, appliances: appliances.value, selectedStep: selectedStep.value }));
-                updateChart();
+                if(chart) { const d = engine.value.steps; chart.data.labels = d.map(x=>formatTime(x.s)); chart.data.datasets[0].data = d.map(x=>x.solar); chart.data.datasets[1].data = d.map(x=>x.load); chart.data.datasets[2].data = d.map(x=>x.soc); chart.update(); }
             }, { deep: true });
 
             onMounted(() => {
@@ -204,7 +206,8 @@
                     { label: 'Load', borderColor: '#60a5fa', data: [], tension: 0.3, pointRadius: 0 },
                     { label: 'SOC', borderColor: '#8b5cf6', data: [], yAxisID: 'y1', borderDash: [3, 3], tension: 0.1, pointRadius: 0 }
                 ]}, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { ticks: { color: '#475569' } }, y1: { position: 'right', min: 0, max: 100, grid: { display: false }, ticks: { color: '#8b5cf6' } } } }});
-                updateChart(); initSortable();
+                const d = engine.value.steps; chart.data.labels = d.map(x=>formatTime(x.s)); chart.data.datasets[0].data = d.map(x=>x.solar); chart.data.datasets[1].data = d.map(x=>x.load); chart.data.datasets[2].data = d.map(x=>x.soc); chart.update();
+                initSortable();
             });
 
             return {
@@ -219,8 +222,11 @@
                 addItem: () => { if(newItem.value.name && newItem.value.power){ appliances.value.unshift({id: Date.now(), ...newItem.value, active: true, slots: [...newItem.value.slots]}); newItem.value={name:'', type:'ac_inverter', power:null, slots:[]}; initSortable(); } },
                 deleteItem: (id) => { appliances.value = appliances.value.filter(a => a.id !== id); },
                 applyMagic: () => { const v = (magicHome.value==='small'?350:magicHome.value==='medium'?650:1250) + (magicFam.value==='1-2'?150:magicFam.value==='3-4'?300:500); appliances.value.unshift({id: Date.now(), name:'🪄 Magic Profile', type:'general', power:v, slots:Array.from({length:24},(_,i)=>i), active: true}); showMagic.value = false; initSortable(); },
-                // 📦 PORTER FIX
-                openPorter: () => { const data = { solarKw: solarKw.value, batteryKwh: batteryKwh.value, rate: rate.value, appliances: appliances.value }; porterString.value = btoa(JSON.stringify(data)); showPorter.value = true; },
+                openPorter: () => { 
+                    const data = { solarKw: solarKw.value, batteryKwh: batteryKwh.value, rate: rate.value, appliances: appliances.value };
+                    porterString.value = btoa(JSON.stringify(data)); 
+                    showPorter.value = true; 
+                },
                 copyPorter: () => { navigator.clipboard.writeText(porterString.value); alert('Code Copied!'); },
                 importPorter: () => { try { const d = JSON.parse(atob(porterString.value)); solarKw.value=d.solarKw; batteryKwh.value=d.batteryKwh; rate.value=d.rate; appliances.value=d.appliances; showPorter.value=false; initSortable(); alert('Success!'); } catch(e) { alert('Error!'); } },
                 takeSnapshot: () => { html2canvas(document.querySelector("#report-area"), {backgroundColor: "#010409", scale: 2}).then(canvas => { let a = document.createElement('a'); a.download = `Solar-Report.png`; a.href = canvas.toDataURL(); a.click(); }); },
