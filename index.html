@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Solar Sim V.7.14 - Reality Check</title>
+    <title>Solar Sim V.7.15 - Ultimate Integration</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -13,36 +13,39 @@
         body { font-family: 'Prompt', sans-serif; background: #010409; color: #f8fafc; padding: 15px; }
         .glass-card { background: rgba(13, 17, 23, 0.9); border: 1px solid rgba(48, 54, 61, 1); border-radius: 1.5rem; padding: 1.5rem; margin-bottom: 1.5rem; }
         .input-dark { background: #0d1117 !important; border: 1px solid #30363d !important; border-radius: 0.5rem !important; padding: 10px !important; color: white !important; font-weight: 900; width: 100%; font-size: 14px; }
-        .hour-btn { width: 26px; height: 26px; font-size: 9px; font-weight: 900; border-radius: 5px; border: 1px solid #30363d; transition: 0.1s; }
+        .hour-btn { width: 26px; height: 26px; font-size: 9px; font-weight: 900; border-radius: 5px; border: 1px solid #30363d; }
         .hour-active { background: #fbbf24; color: #010409; border-color: #fff; }
         .sun-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 30px; height: 30px; background: #fbbf24; border-radius: 50%; border: 3px solid #fff; }
         .kpi-box { background: rgba(255,255,255,0.03); border-radius: 1rem; border: 1px solid rgba(255,255,255,0.05); padding: 1rem; }
         .bill-card { background: linear-gradient(145deg, #161b22, #0d1117); border: 1px solid #30363d; }
+        .drag-handle { cursor: grab !important; padding: 10px; color: #fbbf24; font-size: 18px; }
     </style>
 </head>
 <body class="md:p-6">
     <div id="app" class="max-w-7xl mx-auto space-y-4">
         
         <div class="flex flex-wrap gap-2 no-print justify-end mb-2">
-            <button @click="resetData" class="bg-red-900/40 hover:bg-red-900 text-[10px] font-black px-4 py-2 rounded-xl border border-red-500/20">RESET</button>
-            <button @click="takeSnapshot" class="bg-indigo-600 hover:bg-indigo-500 text-[10px] font-black px-4 py-2 rounded-xl shadow-lg">IMAGE</button>
-            <button onclick="window.print()" class="bg-emerald-600 hover:bg-emerald-500 text-[10px] font-black px-4 py-2 rounded-xl shadow-lg">PRINT PDF</button>
+            <button @click="importFromMain" class="bg-indigo-600/20 hover:bg-indigo-600 text-[10px] font-black px-4 py-2 rounded-xl border border-indigo-500/50 transition-all">🔄 SYNC FROM MAIN</button>
+            <button @click="exportCSV" class="bg-slate-800 hover:bg-slate-700 text-[10px] font-black px-4 py-2 rounded-xl border border-white/5">📊 EXCEL (CSV)</button>
+            <button @click="takeSnapshot" class="bg-indigo-600 hover:bg-indigo-500 text-[10px] font-black px-4 py-2 rounded-xl shadow-lg">📸 SAVE IMAGE</button>
+            <button onclick="window.print()" class="bg-emerald-600 hover:bg-emerald-500 text-[10px] font-black px-4 py-2 rounded-xl shadow-lg">🖨️ PRINT PDF</button>
+            <button @click="resetData" class="bg-red-900/40 hover:bg-red-900 text-[10px] font-black px-4 py-2 rounded-xl border border-red-500/20">🧹 RESET</button>
         </div>
 
         <div id="report-area" class="p-2">
             <div class="flex flex-col lg:flex-row justify-between items-stretch gap-4 mb-4">
                 <div class="flex-1">
-                    <h1 class="text-xl font-black italic text-yellow-400 uppercase tracking-tighter leading-none">SOLAR SIM <span class="text-white text-xs font-normal">V.7.14 REALITY</span></h1>
-                    <p class="text-[9px] text-slate-500 font-bold uppercase italic tracking-widest mt-1">Reset Logic Fixed | Accurate Bills</p>
+                    <h1 class="text-xl font-black italic text-yellow-400 uppercase tracking-tighter leading-none">SOLAR SIM <span class="text-white text-xs font-normal">V.7.15 ULTIMATE</span></h1>
+                    <p class="text-[9px] text-slate-500 font-bold uppercase italic tracking-widest mt-1">Full Integration | Fixed Bills | Sync Enabled</p>
                     
                     <div class="grid grid-cols-2 gap-3 mt-4 text-left">
-                        <div class="kpi-box">
-                            <p class="text-[8px] text-slate-500 uppercase font-black tracking-tighter">พึ่งพาตัวเอง (Self-Sufficiency)</p>
+                        <div class="kpi-box shadow-inner">
+                            <p class="text-[8px] text-slate-500 uppercase font-black">Self-Sufficiency</p>
                             <p class="text-2xl font-black text-blue-400">{{ sufficiency }}%</p>
                         </div>
-                        <div class="kpi-box">
-                            <p class="text-[8px] text-slate-500 uppercase font-black tracking-tighter">ไฟทิ้ง (Overflow)</p>
-                            <p class="text-2xl font-black text-orange-500">{{ wasted }} <span class="text-xs font-normal">kWh</span></p>
+                        <div class="kpi-box shadow-inner">
+                            <p class="text-[8px] text-slate-500 uppercase font-black">Energy Wasted</p>
+                            <p class="text-2xl font-black text-orange-500">{{ wasted }} <span class="text-xs">kWh</span></p>
                         </div>
                     </div>
                 </div>
@@ -59,7 +62,7 @@
                             <span class="text-2xl font-black text-white">฿{{ formatNumber(monthlyNew) }}</span>
                         </div>
                         <div class="flex justify-between items-center bg-emerald-500/10 p-3 rounded-xl border border-emerald-500/20">
-                            <span class="text-[11px] text-emerald-400 font-black uppercase tracking-tighter">ประหยัดได้เดือนละ</span>
+                            <span class="text-[11px] text-emerald-400 font-black uppercase tracking-tighter">ส่วนต่างประหยัดได้</span>
                             <span class="text-3xl font-black text-emerald-400 italic">฿{{ formatNumber(monthlySavings) }}</span>
                         </div>
                     </div>
@@ -68,7 +71,7 @@
 
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 text-left">
                 <div class="lg:col-span-8 space-y-4">
-                    <div class="glass-card shadow-2xl relative">
+                    <div class="glass-card shadow-2xl">
                         <div class="flex justify-between items-center mb-4 text-[9px] font-black uppercase text-slate-500">
                             <span class="no-print">Weather: {{ weather }}</span>
                             <div class="flex gap-4">
@@ -79,18 +82,18 @@
                     </div>
 
                     <div class="glass-card border-t-4 border-yellow-500 grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                        <div>
-                            <label class="text-[9px] text-slate-500 font-black uppercase tracking-widest">จำลองช่วงเวลา</label>
+                        <div class="text-left">
+                            <label class="text-[9px] text-slate-500 font-black uppercase tracking-widest">TIMELINE SELECTION</label>
                             <h2 class="text-7xl font-black italic text-white leading-none">{{formatTime(selectedStep)}}</h2>
                             <input type="range" v-model="selectedStep" min="0" max="95" class="sun-slider w-full h-2 bg-slate-800 rounded-full appearance-none mt-6 no-print">
                         </div>
                         <div class="grid grid-cols-2 gap-4 bg-black/50 p-4 rounded-3xl border border-white/5">
                             <div class="border-r border-white/5 pr-2">
-                                <p class="text-[8px] font-black text-emerald-400 uppercase">ชั่วโมงนี้ประหยัด</p>
-                                <p class="text-2xl font-black text-white italic">฿{{(currentStepData.savedVal).toFixed(2)}}</p>
+                                <p class="text-[8px] font-black text-emerald-400 uppercase italic">Hour Saved</p>
+                                <p class="text-2xl font-black text-white">฿{{(currentStepData.savedVal).toFixed(2)}}</p>
                             </div>
                             <div class="pl-2">
-                                <p class="text-[8px] font-black text-red-400 uppercase">ชั่วโมงนี้จ่ายจริง</p>
+                                <p class="text-[8px] font-black text-red-400 uppercase italic">Hour Cost</p>
                                 <p class="text-2xl font-black italic" :class="currentStepData.grid > 0 ? 'text-red-400' : 'text-emerald-400'">
                                     {{currentStepData.grid > 0 ? '฿'+(currentStepData.grid/1000*rate).toFixed(2) : 'FREE'}}
                                 </p>
@@ -102,7 +105,7 @@
                 <div class="lg:col-span-4">
                     <div class="glass-card border-t-4 border-slate-700 h-full">
                         <div class="flex justify-between items-center border-b border-white/5 pb-2 mb-4">
-                            <h3 class="text-[10px] font-black text-slate-400 uppercase italic tracking-widest">💡 อุปกรณ์ไฟฟ้า</h3>
+                            <h3 class="text-[10px] font-black text-slate-400 uppercase italic tracking-widest">💡 DEMAND PROFILE</h3>
                             <button @click="showMagic = true" class="text-[9px] text-indigo-400 font-black underline no-print">MAGIC 🪄</button>
                         </div>
                         <div id="drag-list" class="space-y-2 max-h-[600px] overflow-y-auto pr-1">
@@ -120,8 +123,8 @@
                                     <div v-for="h in 24" :key="h-1" class="flex-1 h-1 rounded-full" :class="item.slots.includes(h-1)?'bg-indigo-400':'bg-slate-800'"></div>
                                 </div>
                                 <div class="mt-2 text-[8px] text-slate-600 font-bold no-print flex justify-between">
-                                    <span>{{item.active?'ON':'OFF'}}</span>
-                                    <button @click.stop="deleteItem(item.id)" class="text-red-900">DEL</button>
+                                    <span>{{item.active?'ACTIVE':'OFF'}}</span>
+                                    <button @click.stop="deleteItem(item.id)" class="text-red-900 uppercase">Delete</button>
                                 </div>
                             </div>
                         </div>
@@ -132,9 +135,9 @@
 
         <div class="glass-card border-t-4 border-indigo-600 space-y-4 no-print text-left">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div><label class="text-[8px] font-black text-slate-500 uppercase ml-1">แผง (kW)</label><input type="number" v-model.number="solarKw" step="0.1" class="input-dark"></div>
-                <div><label class="text-[8px] font-black text-slate-500 uppercase ml-1">แบต (kWh)</label><input type="number" v-model.number="batteryKwh" step="0.1" class="input-dark"></div>
-                <div><label class="text-[8px] font-black text-slate-500 uppercase ml-1">ค่าไฟ (฿/หน่วย)</label><input type="number" v-model.number="rate" step="0.01" class="input-dark"></div>
+                <div><label class="text-[8px] font-black text-slate-500 uppercase ml-1">PV (kW)</label><input type="number" v-model.number="solarKw" step="0.1" class="input-dark"></div>
+                <div><label class="text-[8px] font-black text-slate-500 uppercase ml-1">Batt (kWh)</label><input type="number" v-model.number="batteryKwh" step="0.1" class="input-dark"></div>
+                <div><label class="text-[8px] font-black text-slate-500 uppercase ml-1">Rate (฿/Unit)</label><input type="number" v-model.number="rate" step="0.01" class="input-dark"></div>
             </div>
             <div class="pt-4 border-t border-white/5 space-y-4">
                 <input type="text" v-model="newItem.name" placeholder="ชื่ออุปกรณ์" class="input-dark">
@@ -154,7 +157,7 @@
                         <button v-for="h in 24" :key="h-1" @click="toggleNewHour(h-1)" :class="newItem.slots.includes(h-1)?'hour-active shadow-sm shadow-yellow-500/50':'bg-slate-800 text-slate-500'" class="hour-btn">{{h-1}}</button>
                     </div>
                 </div>
-                <button @click="addItem" class="w-full bg-indigo-600 py-3 rounded-xl font-black text-[10px] uppercase shadow-lg">+ เพิ่มอุปกรณ์</button>
+                <button @click="addItem" class="w-full bg-indigo-600 py-3 rounded-xl font-black text-[10px] uppercase shadow-lg">+ ADD TO SCHEDULE</button>
             </div>
         </div>
 
@@ -170,7 +173,7 @@
 
 <script>
     const { createApp, ref, computed, watch, onMounted, nextTick } = Vue;
-    const STORAGE_KEY = 'SOLAR_SIM_V714_DATA';
+    const STORAGE_KEY = 'SOLAR_SIM_V715_DATA';
 
     createApp({
         setup() {
@@ -188,7 +191,6 @@
 
             const formatNumber = (n) => Math.round(n).toLocaleString();
             const formatTime = (s) => `${String(Math.floor(s/4)).padStart(2,'0')}:${String((s%4)*15).padStart(2,'0')}`;
-            
             const getWatts = (i) => {
                 if(!i.power) return 0;
                 if(i.type === 'ac_inverter') return Math.round(i.power/15);
@@ -205,54 +207,33 @@
                 return (solarKw.value * 1000 * shape * 0.92 * (hour > 12.5 ? 0.88 : 1.0) * weatherOptions.find(o=>o.id===weather.value).impact * noise);
             };
 
-            // ✅ CORE CALCULATION ENGINE (CLEAN EVERY TIME)
             const engineResults = computed(() => {
-                let data = [];
-                let storedWh = 0;
-                const capWh = batteryKwh.value * 1000;
-                const dt = 0.25; // 15 mins
-                
-                // Reset Counters
-                let totalSolarUsedKwh = 0;
-                let totalLoadKwh = 0;
-                let totalSavedKwh = 0;
-                let totalWastedKwh = 0;
-
+                let data = [], storedWh = 0, capWh = batteryKwh.value * 1000, dt = 0.25;
+                let totalSolarUsedKwh = 0, totalLoadKwh = 0, totalSavedKwh = 0, totalWastedKwh = 0;
                 for(let step = 0; step <= 95; step++) {
                     const h = Math.floor(step / 4);
                     const solar = getSolarAt(step);
                     const load = appliances.value.reduce((s, a) => s + (a.active && a.slots.includes(h) ? getWatts(a) : 0), 0);
-                    
                     const deficit = load - solar;
                     let batteryContribution = 0;
-
                     if (deficit > 0) {
-                        const available = storedWh * 0.95; // Discharge Loss 5%
-                        batteryContribution = Math.min(deficit, available, capWh * 0.5 * dt); // Max 0.5C
+                        batteryContribution = Math.min(deficit, storedWh * 0.95, capWh * 0.5 * dt);
                         storedWh -= (batteryContribution / 0.95);
                     } else {
-                        const chargePossible = Math.abs(deficit) * 0.95; // Charge Loss 5%
-                        const space = capWh - storedWh;
-                        const actualCharge = Math.min(chargePossible, space);
-                        storedWh += actualCharge;
-                        totalWastedKwh += ((chargePossible - actualCharge) / 1000) * dt;
+                        const charge = Math.min(Math.abs(deficit) * 0.95, capWh - storedWh);
+                        storedWh += charge;
+                        totalWastedKwh += ((Math.abs(deficit) * 0.95 - charge) / 1000) * dt;
                     }
                     if(storedWh > capWh) storedWh = capWh; if(storedWh < 0) storedWh = 0;
-                    
                     const savedKwhStep = ((Math.min(load, solar) + batteryContribution) / 1000) * dt;
-                    const gridW = Math.max(0, deficit - batteryContribution);
-
                     totalLoadKwh += (load / 1000) * dt;
                     totalSolarUsedKwh += savedKwhStep;
                     totalSavedKwh += savedKwhStep;
-
-                    data.push({ step, solar, load, soc: capWh > 0 ? (storedWh/capWh*100) : 0, grid: gridW, savedVal: savedKwhStep * rate.value });
+                    data.push({ step, solar, load, soc: capWh > 0 ? (storedWh/capWh*100) : 0, grid: Math.max(0, deficit - batteryContribution), savedVal: savedKwhStep * rate.value });
                 }
-
                 return { steps: data, kpis: { sufficiency: Math.round((totalSolarUsedKwh/totalLoadKwh)*100)||0, wasted: totalWastedKwh.toFixed(1), savedKwh: totalSavedKwh, totalLoadKwh: totalLoadKwh }};
             });
 
-            // ✅ Persistent Auto-Save
             watch([weather, rate, solarKw, batteryKwh, appliances, selectedStep], () => {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify({
                     weather: weather.value, rate: rate.value, solarKw: solarKw.value, batteryKwh: batteryKwh.value, appliances: appliances.value, selectedStep: selectedStep.value
@@ -270,6 +251,15 @@
                 chart.update();
             };
 
+            const initSortable = () => {
+                nextTick(() => {
+                    const el = document.getElementById('drag-list');
+                    if (el) Sortable.create(el, { handle: '.drag-handle', animation: 200, onEnd: (evt) => {
+                        const item = appliances.value.splice(evt.oldIndex, 1)[0]; appliances.value.splice(evt.newIndex, 0, item);
+                    }});
+                });
+            };
+
             onMounted(() => {
                 const ctx = document.getElementById('proChart').getContext('2d');
                 chart = new Chart(ctx, {
@@ -280,12 +270,7 @@
                     ]},
                     options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { ticks: { color: '#475569' } }, y1: { position: 'right', min: 0, max: 100, grid: { display: false }, ticks: { color: '#8b5cf6' } } } }
                 });
-                updateChart();
-                nextTick(() => {
-                    Sortable.create(document.getElementById('drag-list'), { handle: '.drag-handle', animation: 200, onEnd: (evt) => {
-                        const item = appliances.value.splice(evt.oldIndex, 1)[0]; appliances.value.splice(evt.newIndex, 0, item);
-                    }});
-                });
+                updateChart(); initSortable();
             });
 
             return {
@@ -310,7 +295,7 @@
                 deleteItem: (id) => { appliances.value = appliances.value.filter(a => a.id !== id); },
                 applyMagic: () => { 
                     const v = (magicHome.value==='small'?350:magicHome.value==='medium'?650:1250) + (magicFam.value==='1-2'?150:magicFam.value==='3-4'?300:500);
-                    appliances.value.unshift({id: Date.now(), name:'🪄 ไฟพื้นฐานตู้เย็น/เน็ต', type:'general', power:v, slots:Array.from({length:24},(_,i)=>i), active: true}); 
+                    appliances.value.unshift({id: Date.now(), name:'🪄 ไฟพื้นฐาน (Always On)', type:'general', power:v, slots:Array.from({length:24},(_,i)=>i), active: true}); 
                     showMagic.value = false;
                 },
                 takeSnapshot: () => {
@@ -318,7 +303,21 @@
                         let a = document.createElement('a'); a.download = `Solar-Sim.png`; a.href = canvas.toDataURL(); a.click();
                     });
                 },
-                resetData: () => { if(confirm('ล้างข้อมูลทั้งหมด?')) { localStorage.removeItem(STORAGE_KEY); location.reload(); } }
+                exportCSV: () => {
+                    let csv = "Time,Solar(W),Load(W),SOC(%),Grid(W),Saving(฿)\n";
+                    engineResults.value.steps.forEach(d => csv += `${formatTime(d.step)},${d.solar.toFixed(0)},${d.load.toFixed(0)},${d.soc.toFixed(1)},${d.grid.toFixed(0)},${d.savedVal.toFixed(2)}\n`);
+                    let b = new Blob([csv], { type: 'text/csv' }); let l = document.createElement('a'); l.href = window.URL.createObjectURL(b); l.download = `Solar-Simulation-Data.csv`; l.click();
+                },
+                resetData: () => { if(confirm('ล้างข้อมูลทั้งหมด?')) { localStorage.removeItem(STORAGE_KEY); location.reload(); } },
+                importFromMain: () => {
+                    const s = localStorage.getItem('SOLAR_PRO_PERMANENT_STORAGE');
+                    if(s){ 
+                        const d = JSON.parse(s); 
+                        appliances.value = d.appliances.map(a => ({...a, id: Math.random(), active: true, slots: a.slots || Array.from({length:24},(_,i)=>i)})); 
+                        solarKw.value = d.options[0].solarKw; batteryKwh.value = d.options[0].batteryKwh||0; rate.value = d.rate||4.65;
+                        alert('Synced Successfully!');
+                    }
+                }
             }
         }
     }).mount('#app');
