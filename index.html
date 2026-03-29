@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Solar Sim V.7.25 - Precision Active</title>
+    <title>Solar Sim V.7.26 - Redemption Stable</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -18,13 +18,20 @@
         .sun-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 30px; height: 30px; background: #fbbf24; border-radius: 50%; border: 3px solid #fff; }
         .bill-card { background: linear-gradient(145deg, #161b22, #0d1117); border: 1px solid #30363d; }
         .drag-handle { cursor: grab !important; padding: 10px; color: #484f58; font-size: 20px; touch-action: none; }
-        .drag-handle:hover { color: #fbbf24; }
-        
-        /* 🎯 UI ปรับปรุงใหม่ */
-        .check-circle { width: 24px; height: 24px; border-radius: 50%; border: 2px solid #484f58; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
+        .check-circle { width: 24px; height: 24px; border-radius: 50%; border: 2px solid #484f58; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .check-active { background: #fbbf24; border-color: #fbbf24; }
         .device-card-active { background: rgba(251, 191, 36, 0.05) !important; border-color: rgba(251, 191, 36, 0.3) !important; }
         .no-limit-container { height: auto !important; max-height: none !important; overflow: visible !important; }
+        
+        /* 🖨️ Print Style Optimizer */
+        @media print {
+            body { background: white !important; color: black !important; padding: 0; }
+            .no-print { display: none !important; }
+            .glass-card { background: white !important; border: 1px solid #ddd !important; box-shadow: none !important; color: black !important; }
+            h1, h2, h3, p, span, label { color: black !important; }
+            .device-card-active { background: #f8f8f8 !important; border: 1px solid #ccc !important; }
+            .bill-card { background: white !important; border: 2px solid #000 !important; }
+        }
     </style>
 </head>
 <body class="md:p-6">
@@ -34,25 +41,27 @@
             <button @click="openPorter" class="bg-purple-600/20 hover:bg-purple-600 text-[10px] font-black px-4 py-2 rounded-xl border border-purple-500/50 transition-all uppercase">📦 Transfer</button>
             <button @click="importFromMain" class="bg-indigo-600/20 hover:bg-indigo-600 text-[10px] font-black px-4 py-2 rounded-xl border border-indigo-500/50 transition-all uppercase">🔄 Sync Main</button>
             <button @click="takeSnapshot" class="bg-indigo-600 hover:bg-indigo-500 text-[10px] font-black px-4 py-2 rounded-xl shadow-lg uppercase">📸 Snapshot</button>
+            <button onclick="window.print()" class="bg-emerald-600 hover:bg-emerald-500 text-[10px] font-black px-4 py-2 rounded-xl shadow-lg uppercase">🖨️ Print PDF</button>
             <button @click="resetData" class="bg-red-900/40 hover:bg-red-900 text-[10px] font-black px-4 py-2 rounded-xl border border-red-500/20 uppercase">🧹 Reset</button>
         </div>
 
         <div id="report-area" class="p-2 no-limit-container">
             <div class="flex flex-col lg:flex-row justify-between items-stretch gap-4 mb-4">
                 <div class="flex-1 text-left">
-                    <h1 class="text-xl font-black italic text-yellow-400 uppercase tracking-tighter leading-none">SOLAR SIM <span class="text-white text-xs font-normal">V.7.25 PRECISION</span></h1>
-                    <p class="text-[9px] text-slate-500 font-bold uppercase italic tracking-widest mt-1">Direct Action Buttons | Legacy Support</p>
+                    <h1 class="text-xl font-black italic text-yellow-400 uppercase tracking-tighter leading-none">SOLAR SIM <span class="text-white text-xs font-normal">V.7.26 STABLE</span></h1>
+                    <p class="text-[9px] text-slate-500 font-bold uppercase italic tracking-widest mt-1">Full System Fixed | Monthly Bill Active</p>
                     <div class="grid grid-cols-2 gap-3 mt-4">
                         <div class="kpi-box text-center p-3 rounded-2xl border border-white/5 bg-white/5 shadow-inner"><p class="text-[8px] text-slate-500 font-black uppercase">Self-Sufficiency</p><p class="text-2xl font-black text-blue-400">{{ sufficiency }}%</p></div>
                         <div class="kpi-box text-center p-3 rounded-2xl border border-white/5 bg-white/5 shadow-inner"><p class="text-[8px] text-slate-500 font-black uppercase">Overflow</p><p class="text-2xl font-black text-orange-500">{{ wasted }} <span class="text-xs">kWh</span></p></div>
                     </div>
                 </div>
+                
                 <div class="bill-card flex-1 rounded-3xl p-6 border-t-4 border-emerald-500 shadow-2xl text-left">
                     <h3 class="text-xs font-black text-emerald-400 uppercase italic mb-3">Estimated Monthly Bill</h3>
                     <div class="space-y-2">
-                        <div class="flex justify-between border-b border-white/5 pb-1"><span class="text-[10px] text-slate-400 uppercase">Original Bill</span><span class="text-lg font-black text-slate-400 line-through">฿{{ formatNumber(monthlyOriginal) }}</span></div>
-                        <div class="flex justify-between border-b border-white/5 pb-1"><span class="text-[10px] text-emerald-400 font-bold uppercase">Solar Bill</span><span class="text-2xl font-black text-white">฿{{ formatNumber(monthlyNew) }}</span></div>
-                        <div class="flex justify-between items-center bg-emerald-500/10 p-3 rounded-xl border border-emerald-500/20"><span class="text-[11px] text-emerald-400 font-black uppercase tracking-tighter">Savings / Mo</span><span class="text-3xl font-black text-emerald-400 italic">฿{{ formatNumber(monthlySavings) }}</span></div>
+                        <div class="flex justify-between border-b border-white/5 pb-1"><span class="text-[10px] text-slate-400">Original Bill</span><span class="text-lg font-black text-slate-400 line-through">฿{{ formatNumber(monthlyOriginal) }}</span></div>
+                        <div class="flex justify-between border-b border-white/5 pb-1"><span class="text-[10px] text-emerald-400 font-bold">Solar Bill</span><span class="text-2xl font-black text-white">฿{{ formatNumber(monthlyNew) }}</span></div>
+                        <div class="flex justify-between items-center bg-emerald-500/10 p-3 rounded-xl border border-emerald-500/20"><span class="text-[11px] text-emerald-400 font-black">Savings</span><span class="text-3xl font-black text-emerald-400 italic">฿{{ formatNumber(monthlySavings) }}</span></div>
                     </div>
                 </div>
             </div>
@@ -75,8 +84,8 @@
                 <div class="lg:col-span-4 no-limit-container">
                     <div class="glass-card border-t-4 border-slate-700 no-limit-container h-full">
                         <div class="flex justify-between items-center border-b border-white/5 pb-2 mb-4">
-                            <h3 class="text-[10px] font-black text-slate-400 uppercase italic tracking-widest">💡 HOUSEHOLD DEMAND</h3>
-                            <button @click="showMagic = true" class="text-[9px] text-indigo-400 font-black underline no-print uppercase">Magic 🪄</button>
+                            <h3 class="text-[10px] font-black text-slate-400 uppercase italic tracking-widest">💡 DEMAND PROFILES</h3>
+                            <button @click="showMagic = true" class="text-[9px] text-indigo-400 font-black underline no-print">MAGIC 🪄</button>
                         </div>
                         <div id="drag-list" class="space-y-2">
                             <div v-for="item in appliances" :key="item.id" 
@@ -91,22 +100,33 @@
                                         </div>
                                         <span class="font-black text-xs">{{ item.name }}</span>
                                     </div>
-                                    <span class="text-[9px] font-bold text-indigo-400 uppercase">{{ formatNumber(getWatts(item)) }} W</span>
+                                    <span class="text-[9px] font-bold text-indigo-400 uppercase tracking-tighter">{{ formatNumber(getWatts(item)) }} W</span>
                                 </div>
                                 <div class="flex gap-0.5 mt-1 px-1"><div v-for="h in 24" :key="h-1" class="flex-1 h-1 rounded-full" :class="item.slots.includes(h-1)?'bg-indigo-400':'bg-slate-800'"></div></div>
-                                <div class="mt-3 text-right no-print"><button @click.stop="deleteItem(item.id)" class="text-red-900 text-[8px] font-black uppercase opacity-60 hover:opacity-100">Delete</button></div>
+                                <div class="mt-3 text-right no-print"><button @click.stop="deleteItem(item.id)" class="text-red-900 text-[8px] font-black uppercase opacity-60">Delete</button></div>
                             </div>
                         </div>
-                        <div v-if="appliances.length === 0" class="py-10 text-center text-slate-700 italic text-[10px] font-black uppercase">No devices in list</div>
                     </div>
                 </div>
             </div>
         </div>
 
+        <div v-if="showPorter" class="fixed inset-0 bg-black/95 z-[2000] flex justify-center items-center p-4" @click.self="showPorter = false">
+            <div class="glass-card max-w-2xl w-full border-purple-500/50 p-8 space-y-4 shadow-2xl">
+                <h2 class="text-xl font-black italic text-purple-400 uppercase">Universal Transfer 📦</h2>
+                <textarea v-model="porterString" class="w-full h-48 bg-black/50 border border-white/10 rounded-xl p-4 text-[10px] font-mono text-emerald-400 break-all" placeholder="Code will appear here..."></textarea>
+                <div class="grid grid-cols-2 gap-4">
+                    <button @click="copyPorter" class="bg-purple-600 py-3 rounded-xl font-black text-xs uppercase shadow-lg">1. Copy Code</button>
+                    <button @click="importPorter" class="bg-emerald-600 py-3 rounded-xl font-black text-xs uppercase shadow-lg">2. Import Code</button>
+                </div>
+                <button @click="showPorter = false" class="w-full py-2 text-slate-500 text-xs font-black uppercase">Close Window</button>
+            </div>
+        </div>
+
         <div class="glass-card border-t-4 border-indigo-600 space-y-4 no-print text-left">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div><label class="text-[8px] font-black text-slate-500 uppercase">PV Size (kW)</label><input type="number" v-model.number="solarKw" step="0.1" class="input-dark"></div>
-                <div><label class="text-[8px] font-black text-slate-500 uppercase">Battery (kWh)</label><input type="number" v-model.number="batteryKwh" step="0.1" class="input-dark"></div>
+                <div><label class="text-[8px] font-black text-slate-500 uppercase">PV (kW)</label><input type="number" v-model.number="solarKw" step="0.1" class="input-dark"></div>
+                <div><label class="text-[8px] font-black text-slate-500 uppercase">Batt (kWh)</label><input type="number" v-model.number="batteryKwh" step="0.1" class="input-dark"></div>
                 <div><label class="text-[8px] font-black text-slate-500 uppercase">Rate (฿)</label><input type="number" v-model.number="rate" step="0.01" class="input-dark"></div>
             </div>
             <div class="pt-4 border-t border-white/5 space-y-4">
@@ -115,39 +135,29 @@
                     <select v-model="newItem.type" class="input-dark">
                         <option value="ac_inverter">AC Inverter (BTU)</option><option value="ac_standard">AC Standard (BTU)</option><option value="fridge">Fridge (W)</option><option value="computer">Computer (W)</option><option value="ev">EV Charger (W)</option><option value="general">General (W)</option>
                     </select>
-                    <input type="number" v-model.number="newItem.power" placeholder="BTU / Watts" class="input-dark">
+                    <input type="number" v-model.number="newItem.power" placeholder="Watts / BTU" class="input-dark">
                 </div>
                 <div class="bg-black/40 p-4 rounded-xl">
-                    <div class="flex justify-between items-center mb-3">
-                        <p class="text-[8px] text-slate-500 font-black uppercase tracking-widest italic">Hours</p>
-                        <button @click="toggleAllDay" :class="newItem.slots.length === 24 ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-500'" class="px-4 py-1 rounded-lg text-[9px] font-black uppercase border border-white/5">⚡ Select 24h</button>
-                    </div>
-                    <div class="grid grid-cols-12 md:grid-cols-24 gap-1"><button v-for="h in 24" :key="h-1" @click="toggleNewHour(h-1)" :class="newItem.slots.includes(h-1)?'hour-active shadow-sm shadow-yellow-500/50':'bg-slate-800 text-slate-500'" class="hour-btn transition-all">{{h-1}}</button></div>
+                    <div class="flex justify-between items-center mb-3"><p class="text-[8px] text-slate-500 font-black uppercase">Operation Slots</p><button @click="toggleAllDay" class="bg-indigo-600 text-white px-4 py-1 rounded-lg text-[9px] font-black">⚡ SELECT ALL DAY</button></div>
+                    <div class="grid grid-cols-12 md:grid-cols-24 gap-1"><button v-for="h in 24" :key="h-1" @click="toggleNewHour(h-1)" :class="newItem.slots.includes(h-1)?'hour-active':'bg-slate-800 text-slate-500'" class="hour-btn">{{h-1}}</button></div>
                 </div>
-                <button @click="addItem" class="w-full bg-indigo-600 py-4 rounded-xl font-black text-[11px] uppercase shadow-lg active:scale-95 transition-all tracking-widest">+ COMMIT NEW DEVICE</button>
+                <button @click="addItem" class="w-full bg-indigo-600 py-4 rounded-xl font-black text-[11px] uppercase shadow-lg">+ COMMIT TO REPORT</button>
             </div>
         </div>
 
         <div v-if="showMagic" class="fixed inset-0 bg-black/90 z-[1000] flex justify-center items-center p-6" @click.self="showMagic = false">
-            <div class="bg-slate-900 p-8 rounded-[40px] border border-indigo-500/30 text-center space-y-5 max-w-sm w-full"><h4 class="font-black text-indigo-400 uppercase border-b border-white/5 pb-2">🪄 Magic Fill</h4><select v-model="magicHome" class="input-dark"><option value="small">Townhome</option><option value="medium">Detached</option><option value="large">Villa</option></select><select v-model="magicFam" class="input-dark"><option value="1-2">1-2 People</option><option value="3-4">3-4 People</option></select><button @click="applyMagic" class="w-full bg-indigo-600 py-4 rounded-xl font-black text-xs uppercase">Generate</button></div>
-        </div>
-        <div v-if="showPorter" class="fixed inset-0 bg-black/95 z-[2000] flex justify-center items-center p-4" @click.self="showPorter = false">
-            <div class="glass-card max-w-2xl w-full border-purple-500/50 p-8 space-y-4"><h2 class="text-xl font-black italic text-purple-400 uppercase tracking-tighter">Universal Porter 📦</h2><textarea v-model="porterString" class="w-full h-48 bg-black/50 border border-white/10 rounded-xl p-4 text-[10px] font-mono text-emerald-400 break-all"></textarea><div class="grid grid-cols-2 gap-4"><button @click="copyPorter" class="bg-purple-600 py-3 rounded-xl font-black text-xs uppercase shadow-lg">Copy Code</button><button @click="importPorter" class="bg-emerald-600 py-3 rounded-xl font-black text-xs uppercase shadow-lg">Import Code</button></div></div>
+            <div class="bg-slate-900 p-8 rounded-[40px] border border-indigo-500/30 text-center space-y-5 max-w-sm w-full"><h4 class="font-black text-indigo-400 uppercase border-b border-white/5 pb-2">🪄 Magic Fill</h4><select v-model="magicHome" class="input-dark"><option value="small">Townhome</option><option value="medium">Detached</option><option value="large">Villa</option></select><select v-model="magicFam" class="input-dark"><option value="1-2">1-2 People</option><option value="3-4">3-4 People</option></select><button @click="applyMagic" class="w-full bg-indigo-600 py-4 rounded-xl font-black text-xs uppercase shadow-xl">Generate</button></div>
         </div>
     </div>
 
 <script>
     const { createApp, ref, computed, watch, onMounted, nextTick } = Vue;
-    // 🔑 THE MASTER KEY: จดจำข้อมูลจากทุกเวอร์ชัน (กันลืมของจริง)
     const MASTER_KEY = 'SOLAR_SIM_V_MASTER_PERMANENT';
-    const OLD_KEYS = ['SOLAR_SIM_V77_DATA', 'SOLAR_SIM_V718_DATA', 'SOLAR_SIM_V724_DATA'];
 
     createApp({
         setup() {
-            // 🚀 RECOVERY LOGIC: ตรวจหาข้อมูลเก่าจากทุกลิ้นชักที่เคยเปิด
-            let raw = localStorage.getItem(MASTER_KEY);
-            if(!raw) { for(let k of OLD_KEYS) { let old = localStorage.getItem(k); if(old) { raw = old; break; } } }
-            const saved = JSON.parse(raw || '{}');
+            let raw = localStorage.getItem(MASTER_KEY) || localStorage.getItem('SOLAR_SIM_V77_DATA') || '{}';
+            const saved = JSON.parse(raw);
 
             const selectedStep = ref(saved.selectedStep || 48), weather = ref(saved.weather || 'sunny'), rate = ref(saved.rate || 4.65);
             const solarKw = ref(saved.solarKw || 5.0), batteryKwh = ref(saved.batteryKwh || 10.0);
@@ -155,37 +165,36 @@
             const showMagic = ref(false), showPorter = ref(false), porterString = ref(''), magicHome = ref('medium'), magicFam = ref('3-4');
             const newItem = ref({name:'', type:'ac_inverter', power:null, slots:[]});
             const weatherOptions = [{id:'sunny',label:'Sunny',icon:'☀️',impact:1.0},{id:'cloudy',label:'Cloudy',icon:'☁️',impact:0.45},{id:'rainy',label:'Rainy',icon:'🌧️',impact:0.15}];
-            let chart = null, sortable = null;
+            let chart = null, sortableInstance = null;
 
             const formatNumber = (n) => Math.round(n).toLocaleString();
             const formatTime = (s) => `${String(Math.floor(s/4)).padStart(2,'0')}:${String((s%4)*15).padStart(2,'0')}`;
             const getWatts = (i) => { if(!i.power) return 0; const b = i.type.includes('ac_standard') ? i.power/11 : (i.type.includes('ac')?i.power/15 : (i.type==='fridge'?i.power*0.45 : (i.type==='computer'?i.power*0.65 : i.power))); return Math.round(b); };
 
-            const getSolarAt = (step) => { const h = step / 4; if(h < 6 || h > 18) return 0; return (solarKw.value * 1000 * Math.sin((h - 6) * Math.PI / 12) * 0.92 * (h > 12.5 ? 0.88 : 1.0) * weatherOptions.find(o=>o.id===weather.value).impact * (0.96 + Math.sin(step * 0.8) * 0.04)); };
-
             const engine = computed(() => {
                 let data = [], storedWh = 0, capWh = batteryKwh.value * 1000, dt = 0.25;
                 let totalSolarUsed = 0, totalLoad = 0, totalSaved = 0, totalWasted = 0;
                 for(let s = 0; s <= 95; s++) {
-                    const h = Math.floor(s / 4), solar = getSolarAt(s), load = appliances.value.reduce((acc, a) => acc + (a.active && a.slots.includes(h) ? getWatts(a) : 0), 0);
+                    const h = Math.floor(s/4), solar = (solarKw.value * 1000 * Math.sin((h-6)*Math.PI/12) * 0.92 * (h>12.5?0.88:1.0) * weatherOptions.find(o=>o.id===weather.value).impact * (0.96+Math.sin(s*0.8)*0.04));
+                    const load = appliances.value.reduce((acc, a) => acc + (a.active && a.slots.includes(h) ? getWatts(a) : 0), 0);
                     const deficit = load - solar; let batteryContribution = 0;
-                    if (deficit > 0) { batteryContribution = Math.min(deficit, storedWh * 0.95, capWh * 0.5 * dt); storedWh -= (batteryContribution / 0.95); }
-                    else { const charge = Math.min(Math.abs(deficit) * 0.95, capWh - storedWh); storedWh += charge; totalWasted += ((Math.abs(deficit) * 0.95 - charge) / 1000) * dt; }
+                    if (deficit > 0) { batteryContribution = Math.min(deficit, storedWh*0.95, capWh*0.5*dt); storedWh -= (batteryContribution/0.95); }
+                    else { const charge = Math.min(Math.abs(deficit)*0.95, capWh-storedWh); storedWh += charge; totalWasted += ((Math.abs(deficit)*0.95-charge)/1000)*dt; }
                     if(storedWh > capWh) storedWh = capWh; if(storedWh < 0) storedWh = 0;
                     const savedKwh = ((Math.min(load, solar) + batteryContribution) / 1000) * dt;
-                    totalLoad += (load / 1000) * dt; totalSolarUsed += savedKwh; totalSaved += savedKwh;
-                    data.push({ s, solar, load, soc: capWh > 0 ? (storedWh/capWh*100) : 0, grid: Math.max(0, deficit - batteryContribution), savedVal: savedKwh * rate.value });
+                    totalLoad += (load/1000)*dt; totalSolarUsed += savedKwh; totalSaved += savedKwh;
+                    data.push({ s, solar, load, soc: capWh>0?(storedWh/capWh*100):0, grid: Math.max(0, deficit-batteryContribution), savedVal: savedKwh*rate.value });
                 }
                 return { steps: data, kpis: { sufficiency: Math.round((totalSolarUsed/totalLoad)*100)||0, wasted: totalWasted.toFixed(1), savedKwh: totalSaved, totalLoadKwh: totalLoad }};
             });
 
-            const initSortable = () => { nextTick(() => { const el = document.getElementById('drag-list'); if (el) { if(sortable) sortable.destroy(); sortable = Sortable.create(el, { handle: '.drag-handle', animation: 200, onEnd: (e) => { const list = [...appliances.value]; const item = list.splice(e.oldIndex, 1)[0]; list.splice(e.newIndex, 0, item); appliances.value = list; } }); } }); };
+            const updateChart = () => { if(chart) { const d = engine.value.steps; chart.data.labels = d.map(x=>formatTime(x.s)); chart.data.datasets[0].data = d.map(x=>x.solar); chart.data.datasets[1].data = d.map(x=>x.load); chart.data.datasets[2].data = d.map(x=>x.soc); chart.update(); } };
+
+            const initSortable = () => { nextTick(() => { const el = document.getElementById('drag-list'); if (el) { if(sortableInstance) sortableInstance.destroy(); sortableInstance = Sortable.create(el, { handle: '.drag-handle', animation: 200, onEnd: (e) => { const list = [...appliances.value]; const item = list.splice(e.oldIndex, 1)[0]; list.splice(e.newIndex, 0, item); appliances.value = list; } }); } }); };
 
             watch([weather, rate, solarKw, batteryKwh, appliances, selectedStep], () => {
-                const bundle = { weather: weather.value, rate: rate.value, solarKw: solarKw.value, batteryKwh: batteryKwh.value, appliances: appliances.value, selectedStep: selectedStep.value };
-                localStorage.setItem(MASTER_KEY, JSON.stringify(bundle));
-                OLD_KEYS.forEach(k => localStorage.setItem(k, JSON.stringify(bundle))); // ✅ Sync back to all keys
-                if(chart) { const d = engine.value.steps; chart.data.labels = d.map(x => formatTime(x.s)); chart.data.datasets[0].data = d.map(x => x.solar); chart.data.datasets[1].data = d.map(x => x.load); chart.data.datasets[2].data = d.map(x => x.soc); chart.update(); }
+                localStorage.setItem(MASTER_KEY, JSON.stringify({ weather: weather.value, rate: rate.value, solarKw: solarKw.value, batteryKwh: batteryKwh.value, appliances: appliances.value, selectedStep: selectedStep.value }));
+                updateChart();
             }, { deep: true });
 
             onMounted(() => {
@@ -195,12 +204,11 @@
                     { label: 'Load', borderColor: '#60a5fa', data: [], tension: 0.3, pointRadius: 0 },
                     { label: 'SOC', borderColor: '#8b5cf6', data: [], yAxisID: 'y1', borderDash: [3, 3], tension: 0.1, pointRadius: 0 }
                 ]}, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { ticks: { color: '#475569' } }, y1: { position: 'right', min: 0, max: 100, grid: { display: false }, ticks: { color: '#8b5cf6' } } } }});
-                const d = engine.value.steps; chart.data.labels = d.map(x => formatTime(x.s)); chart.data.datasets[0].data = d.map(x => x.solar); chart.data.datasets[1].data = d.map(x => x.load); chart.data.datasets[2].data = d.map(x => x.soc); chart.update();
-                initSortable();
+                updateChart(); initSortable();
             });
 
             return {
-                selectedStep, weather, rate, solarKw, batteryKwh, appliances, newItem, weatherOptions, showMagic, magicHome, magicFam, showPorter, porterString,
+                selectedStep, weather, rate, solarKw, batteryKwh, appliances, newItem, weatherOptions, showMagic, showPorter, porterString,
                 formatNumber, formatTime, getWatts, currentStepData: computed(() => engine.value.steps[selectedStep.value]),
                 sufficiency: computed(() => engine.value.kpis.sufficiency), wasted: computed(() => engine.value.kpis.wasted),
                 monthlyOriginal: computed(() => Math.round(engine.value.kpis.totalLoadKwh * rate.value * 30)),
@@ -210,16 +218,13 @@
                 toggleAllDay: () => { newItem.value.slots = newItem.value.slots.length === 24 ? [] : Array.from({length: 24}, (_, i) => i); },
                 addItem: () => { if(newItem.value.name && newItem.value.power){ appliances.value.unshift({id: Date.now(), ...newItem.value, active: true, slots: [...newItem.value.slots]}); newItem.value={name:'', type:'ac_inverter', power:null, slots:[]}; initSortable(); } },
                 deleteItem: (id) => { appliances.value = appliances.value.filter(a => a.id !== id); },
-                applyMagic: () => { 
-                    const v = (magicHome.value==='small'?350:magicHome.value==='medium'?650:1250) + (magicFam.value==='1-2'?150:magicFam.value==='3-4'?300:500); 
-                    appliances.value.unshift({id: Date.now(), name:'🪄 Baseload (Always On)', type:'general', power:v, slots:Array.from({length:24},(_,i)=>i), active: true}); 
-                    showMagic.value = false; initSortable(); 
-                },
-                openPorter: () => { porterString.value = btoa(JSON.stringify({ solarKw: solarKw.value, batteryKwh: batteryKwh.value, rate: rate.value, appliances: appliances.value })); showPorter.value = true; },
+                applyMagic: () => { const v = (magicHome.value==='small'?350:magicHome.value==='medium'?650:1250) + (magicFam.value==='1-2'?150:magicFam.value==='3-4'?300:500); appliances.value.unshift({id: Date.now(), name:'🪄 Magic Profile', type:'general', power:v, slots:Array.from({length:24},(_,i)=>i), active: true}); showMagic.value = false; initSortable(); },
+                // 📦 PORTER FIX
+                openPorter: () => { const data = { solarKw: solarKw.value, batteryKwh: batteryKwh.value, rate: rate.value, appliances: appliances.value }; porterString.value = btoa(JSON.stringify(data)); showPorter.value = true; },
                 copyPorter: () => { navigator.clipboard.writeText(porterString.value); alert('Code Copied!'); },
-                importPorter: () => { try { const d = JSON.parse(atob(porterString.value)); solarKw.value=d.solarKw; batteryKwh.value=d.batteryKwh; rate.value=d.rate; appliances.value=d.appliances; showPorter.value=false; initSortable(); alert('Imported!'); } catch(e) { alert('Code Error!'); } },
-                takeSnapshot: () => { html2canvas(document.querySelector("#report-area"), {backgroundColor: "#010409", scale: 2}).then(canvas => { let a = document.createElement('a'); a.download = `Solar-V725.png`; a.href = canvas.toDataURL(); a.click(); }); },
-                resetData: () => { if(confirm('Clear all?')) { localStorage.clear(); location.reload(); } },
+                importPorter: () => { try { const d = JSON.parse(atob(porterString.value)); solarKw.value=d.solarKw; batteryKwh.value=d.batteryKwh; rate.value=d.rate; appliances.value=d.appliances; showPorter.value=false; initSortable(); alert('Success!'); } catch(e) { alert('Error!'); } },
+                takeSnapshot: () => { html2canvas(document.querySelector("#report-area"), {backgroundColor: "#010409", scale: 2}).then(canvas => { let a = document.createElement('a'); a.download = `Solar-Report.png`; a.href = canvas.toDataURL(); a.click(); }); },
+                resetData: () => { if(confirm('Reset all?')) { localStorage.clear(); location.reload(); } },
                 importFromMain: () => { const s = localStorage.getItem('SOLAR_PRO_PERMANENT_STORAGE'); if(s){ const d = JSON.parse(s); appliances.value = d.appliances.map(a => ({...a, id: Math.random(), active: true, slots: a.slots || Array.from({length:24},(_,i)=>i)})); solarKw.value = d.options[0].solarKw; batteryKwh.value = d.options[0].batteryKwh||0; rate.value = d.rate||4.65; initSortable(); alert('Synced!'); } }
             }
         }
