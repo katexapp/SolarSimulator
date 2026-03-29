@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Solar Sim V.7.18 - Infinity Frame</title>
+    <title>Solar Sim V.7.19 - Legacy Connector</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -13,22 +13,19 @@
         body { font-family: 'Prompt', sans-serif; background: #010409; color: #f8fafc; padding: 10px; }
         .glass-card { background: rgba(13, 17, 23, 0.9); border: 1px solid rgba(48, 54, 61, 1); border-radius: 1.5rem; padding: 1.5rem; margin-bottom: 1rem; }
         .input-dark { background: #0d1117 !important; border: 1px solid #30363d !important; border-radius: 0.5rem !important; padding: 10px !important; color: white !important; font-weight: 900; width: 100%; font-size: 14px; }
-        .hour-btn { width: 26px; height: 26px; font-size: 9px; font-weight: 900; border-radius: 5px; border: 1px solid #30363d; }
+        .hour-btn { width: 26px; height: 26px; font-size: 9px; font-weight: 900; border-radius: 5px; border: 1px solid #30363d; transition: 0.1s; }
         .hour-active { background: #fbbf24; color: #010409; border-color: #fff; }
         .sun-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 30px; height: 30px; background: #fbbf24; border-radius: 50%; border: 3px solid #fff; }
         .bill-card { background: linear-gradient(145deg, #161b22, #0d1117); border: 1px solid #30363d; }
         .drag-handle { cursor: grab !important; padding: 10px; color: #fbbf24; font-size: 18px; }
-        
-        /* 🚀 THE INFINITY FIX: ถอดระบบ Scroll ทิ้งถาวรเพื่อให้กรอบขยายตามจริง */
         .no-limit-container { height: auto !important; max-height: none !important; overflow: visible !important; }
-        #drag-list { height: auto !important; max-height: none !important; overflow: visible !important; }
     </style>
 </head>
 <body class="md:p-6">
     <div id="app" class="max-w-7xl mx-auto space-y-4">
         
         <div class="flex flex-wrap gap-2 no-print justify-end mb-2">
-            <button @click="openPorter" class="bg-purple-600/20 hover:bg-purple-600 text-[10px] font-black px-4 py-2 rounded-xl border border-purple-500/50 transition-all">📦 TRANSFER (iPad/Phone)</button>
+            <button @click="openPorter" class="bg-purple-600/20 hover:bg-purple-600 text-[10px] font-black px-4 py-2 rounded-xl border border-purple-500/50 transition-all">📦 TRANSFER</button>
             <button @click="importFromMain" class="bg-indigo-600/20 hover:bg-indigo-600 text-[10px] font-black px-4 py-2 rounded-xl border border-indigo-500/50 transition-all">🔄 SYNC MAIN</button>
             <button @click="exportCSV" class="bg-slate-800 hover:bg-slate-700 text-[10px] font-black px-4 py-2 rounded-xl border border-white/5">📊 EXCEL</button>
             <button @click="takeSnapshot" class="bg-indigo-600 hover:bg-indigo-500 text-[10px] font-black px-4 py-2 rounded-xl shadow-lg">📸 SAVE IMAGE</button>
@@ -36,12 +33,12 @@
         </div>
 
         <div v-if="showPorter" class="fixed inset-0 bg-black/95 z-[2000] flex justify-center items-center p-4" @click.self="showPorter = false">
-            <div class="glass-card max-w-2xl w-full border-purple-500/50 p-8 space-y-4 shadow-[0_0_50px_rgba(168,85,247,0.2)]">
+            <div class="glass-card max-w-2xl w-full border-purple-500/50 p-8 space-y-4">
                 <h2 class="text-xl font-black italic text-purple-400">Universal Data Porter 📦</h2>
                 <textarea v-model="porterString" class="w-full h-48 bg-black/50 border border-white/10 rounded-xl p-4 text-[10px] font-mono text-emerald-400 break-all"></textarea>
                 <div class="grid grid-cols-2 gap-4">
-                    <button @click="copyPorter" class="bg-purple-600 py-3 rounded-xl font-black text-xs uppercase">Copy My Code</button>
-                    <button @click="importPorter" class="bg-emerald-600 py-3 rounded-xl font-black text-xs uppercase">Import This Code</button>
+                    <button @click="copyPorter" class="bg-purple-600 py-3 rounded-xl font-black text-xs uppercase">Copy Code</button>
+                    <button @click="importPorter" class="bg-emerald-600 py-3 rounded-xl font-black text-xs uppercase">Import Code</button>
                 </div>
                 <button @click="showPorter = false" class="w-full py-2 text-slate-600 text-[10px] font-black uppercase">Close</button>
             </div>
@@ -50,11 +47,11 @@
         <div id="report-area" class="p-2 no-limit-container">
             <div class="flex flex-col lg:flex-row justify-between items-stretch gap-4 mb-4">
                 <div class="flex-1 text-left">
-                    <h1 class="text-xl font-black italic text-yellow-400 uppercase tracking-tighter leading-none">SOLAR SIM <span class="text-white text-xs font-normal">V.7.18 INFINITY</span></h1>
-                    <p class="text-[9px] text-slate-500 font-bold uppercase italic tracking-widest mt-1">Full Visibility Engine | Auto-Save Active</p>
+                    <h1 class="text-xl font-black italic text-yellow-400 uppercase tracking-tighter leading-none">SOLAR SIM <span class="text-white text-xs font-normal">V.7.19 STABLE MEMORY</span></h1>
+                    <p class="text-[9px] text-slate-500 font-bold uppercase italic tracking-widest mt-1">Infinity Frame | Legacy Link Active</p>
                     <div class="grid grid-cols-2 gap-3 mt-4">
-                        <div class="kpi-box text-center p-3 rounded-2xl border border-white/5 bg-white/5 shadow-inner"><p class="text-[8px] text-slate-500 uppercase font-black">Self-Sufficiency</p><p class="text-2xl font-black text-blue-400">{{ sufficiency }}%</p></div>
-                        <div class="kpi-box text-center p-3 rounded-2xl border border-white/5 bg-white/5 shadow-inner"><p class="text-[8px] text-slate-500 uppercase font-black">Overflow</p><p class="text-2xl font-black text-orange-500">{{ wasted }} <span class="text-xs">kWh</span></p></div>
+                        <div class="kpi-box text-center p-3 rounded-2xl border border-white/5 bg-white/5 shadow-inner"><p class="text-[8px] text-slate-500 uppercase font-black tracking-tighter">Self-Sufficiency</p><p class="text-2xl font-black text-blue-400">{{ sufficiency }}%</p></div>
+                        <div class="kpi-box text-center p-3 rounded-2xl border border-white/5 bg-white/5 shadow-inner"><p class="text-[8px] text-slate-500 uppercase font-black tracking-tighter">Overflow</p><p class="text-2xl font-black text-orange-500">{{ wasted }} <span class="text-xs">kWh</span></p></div>
                     </div>
                 </div>
                 <div class="bill-card flex-1 rounded-3xl p-6 border-t-4 border-emerald-500 shadow-2xl text-left">
@@ -62,22 +59,22 @@
                     <div class="space-y-3">
                         <div class="flex justify-between border-b border-white/5 pb-2"><span class="text-[10px] text-slate-400 uppercase">Original Bill</span><span class="text-lg font-black text-slate-400 line-through">฿{{ formatNumber(monthlyOriginal) }}</span></div>
                         <div class="flex justify-between border-b border-white/5 pb-2"><span class="text-[10px] text-emerald-400 font-bold uppercase">New Bill</span><span class="text-2xl font-black text-white">฿{{ formatNumber(monthlyNew) }}</span></div>
-                        <div class="flex justify-between items-center bg-emerald-500/10 p-3 rounded-xl border border-emerald-500/20"><span class="text-[11px] text-emerald-400 font-black uppercase tracking-tighter">Monthly Savings</span><span class="text-3xl font-black text-emerald-400 italic">฿{{ formatNumber(monthlySavings) }}</span></div>
+                        <div class="flex justify-between items-center bg-emerald-500/10 p-3 rounded-xl border border-emerald-500/20"><span class="text-[11px] text-emerald-400 font-black uppercase tracking-tighter">Savings</span><span class="text-3xl font-black text-emerald-400 italic">฿{{ formatNumber(monthlySavings) }}</span></div>
                     </div>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 text-left no-limit-container">
                 <div class="lg:col-span-8 space-y-4">
-                    <div class="glass-card shadow-2xl h-[340px] relative"><canvas id="proChart"></canvas></div>
+                    <div class="glass-card shadow-2xl h-[300px] relative"><canvas id="proChart"></canvas></div>
                     <div class="glass-card border-t-4 border-yellow-500 grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
                         <div>
                             <h2 class="text-7xl font-black italic text-white leading-none">{{formatTime(selectedStep)}}</h2>
                             <input type="range" v-model="selectedStep" min="0" max="95" class="sun-slider w-full h-2 bg-slate-800 rounded-full appearance-none mt-6 no-print">
                         </div>
                         <div class="grid grid-cols-2 gap-4 bg-black/50 p-4 rounded-3xl">
-                            <div><p class="text-[8px] font-black text-emerald-400 uppercase">Saving/hr</p><p class="text-2xl font-black text-white">฿{{(currentStepData.savedVal).toFixed(2)}}</p></div>
-                            <div><p class="text-[8px] font-black text-red-400 uppercase">Cost/hr</p><p class="text-2xl font-black italic" :class="currentStepData.grid > 0 ? 'text-red-400' : 'text-emerald-400'">{{currentStepData.grid > 0 ? '฿'+(currentStepData.grid/1000*rate).toFixed(2) : 'FREE'}}</p></div>
+                            <div><p class="text-[8px] font-black text-emerald-400 uppercase italic">Hr Saved</p><p class="text-2xl font-black text-white">฿{{(currentStepData.savedVal).toFixed(2)}}</p></div>
+                            <div><p class="text-[8px] font-black text-red-400 uppercase italic">Hr Cost</p><p class="text-2xl font-black italic" :class="currentStepData.grid > 0 ? 'text-red-400' : 'text-emerald-400'">{{currentStepData.grid > 0 ? '฿'+(currentStepData.grid/1000*rate).toFixed(2) : 'FREE'}}</p></div>
                         </div>
                     </div>
                 </div>
@@ -93,15 +90,10 @@
                                  :class="item.active ? 'bg-white/5 border-white/10 shadow-lg' : 'opacity-30 no-print'"
                                  class="flex flex-col p-3 rounded-xl border border-white/5 transition-all device-item cursor-pointer">
                                 <div class="flex justify-between items-start">
-                                    <div class="flex items-center gap-2">
-                                        <span class="drag-handle no-print">☰</span>
-                                        <span class="font-black text-xs" @click="item.active = !item.active">{{ item.name }}</span>
-                                    </div>
+                                    <div class="flex items-center gap-2"><span class="drag-handle no-print">☰</span><span class="font-black text-xs" @click="item.active = !item.active">{{ item.name }}</span></div>
                                     <span class="text-[9px] font-bold text-indigo-400 uppercase">{{ formatNumber(getWatts(item)) }} W</span>
                                 </div>
-                                <div class="flex gap-0.5 mt-2 overflow-hidden">
-                                    <div v-for="h in 24" :key="h-1" class="flex-1 h-1 rounded-full" :class="item.slots.includes(h-1)?'bg-indigo-400':'bg-slate-800'"></div>
-                                </div>
+                                <div class="flex gap-0.5 mt-2 overflow-hidden"><div v-for="h in 24" :key="h-1" class="flex-1 h-1 rounded-full" :class="item.slots.includes(h-1)?'bg-indigo-400':'bg-slate-800'"></div></div>
                                 <div class="mt-2 flex justify-between no-print"><span class="text-[8px] text-slate-600 font-bold uppercase">{{item.active?'ON':'OFF'}}</span><button @click.stop="deleteItem(item.id)" class="text-red-900 text-[8px] font-black">DELETE</button></div>
                             </div>
                         </div>
@@ -112,54 +104,47 @@
 
         <div class="glass-card border-t-4 border-indigo-600 space-y-4 no-print text-left">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div><label class="text-[8px] font-black text-slate-500 uppercase ml-1">Solar PV (kW)</label><input type="number" v-model.number="solarKw" step="0.1" class="input-dark"></div>
-                <div><label class="text-[8px] font-black text-slate-500 uppercase ml-1">Battery (kWh)</label><input type="number" v-model.number="batteryKwh" step="0.1" class="input-dark"></div>
-                <div><label class="text-[8px] font-black text-slate-500 uppercase ml-1">Rate (฿/Unit)</label><input type="number" v-model.number="rate" step="0.01" class="input-dark"></div>
+                <div><label class="text-[8px] font-black text-slate-500 uppercase ml-1">PV (kW)</label><input type="number" v-model.number="solarKw" step="0.1" class="input-dark"></div>
+                <div><label class="text-[8px] font-black text-slate-500 uppercase ml-1">Batt (kWh)</label><input type="number" v-model.number="batteryKwh" step="0.1" class="input-dark"></div>
+                <div><label class="text-[8px] font-black text-slate-500 uppercase ml-1">Rate (฿)</label><input type="number" v-model.number="rate" step="0.01" class="input-dark"></div>
             </div>
             <div class="pt-4 border-t border-white/5 space-y-4">
-                <input type="text" v-model="newItem.name" placeholder="ชื่ออุปกรณ์ (เช่น แอร์, ทีวี)" class="input-dark">
+                <input type="text" v-model="newItem.name" placeholder="ชื่อเครื่องใช้ไฟฟ้า" class="input-dark">
                 <div class="grid grid-cols-2 gap-3">
                     <select v-model="newItem.type" class="input-dark">
-                        <option value="ac_inverter">AC Inverter (BTU)</option>
-                        <option value="ac_standard">AC Standard (BTU)</option>
-                        <option value="fridge">Fridge (Watts)</option>
-                        <option value="computer">Computer (Watts)</option>
-                        <option value="ev">EV Charger (Watts)</option>
-                        <option value="general">General (Watts)</option>
+                        <option value="ac_inverter">AC Inverter (BTU)</option><option value="ac_standard">AC Standard (BTU)</option><option value="fridge">Fridge (W)</option><option value="computer">Computer (W)</option><option value="ev">EV Charger (W)</option><option value="general">General (W)</option>
                     </select>
                     <input type="number" v-model.number="newItem.power" placeholder="BTU / Watts" class="input-dark">
                 </div>
-                <div class="bg-black/40 p-4 rounded-xl text-center">
-                    <p class="text-[8px] text-slate-500 font-black uppercase mb-2 italic">Select operating hours (0-23)</p>
-                    <div class="grid grid-cols-12 md:grid-cols-24 gap-1">
-                        <button v-for="h in 24" :key="h-1" @click="toggleNewHour(h-1)" :class="newItem.slots.includes(h-1)?'hour-active shadow-sm shadow-yellow-500/50':'bg-slate-800 text-slate-500'" class="hour-btn transition-all">{{h-1}}</button>
-                    </div>
+                <div class="bg-black/40 p-3 rounded-xl border border-white/5 text-center">
+                    <div class="grid grid-cols-12 md:grid-cols-24 gap-1"><button v-for="h in 24" :key="h-1" @click="toggleNewHour(h-1)" :class="newItem.slots.includes(h-1)?'hour-active shadow-sm shadow-yellow-500/50':'bg-slate-800 text-slate-500'" class="hour-btn">{{h-1}}</button></div>
                 </div>
-                <button @click="addItem" class="w-full bg-indigo-600 py-4 rounded-xl font-black text-[10px] uppercase shadow-lg transition-all">+ COMMIT TO SCHEDULE</button>
+                <button @click="addItem" class="w-full bg-indigo-600 py-3 rounded-xl font-black text-[10px] uppercase shadow-lg active:scale-95 transition-all">+ COMMIT DEVICE</button>
             </div>
-            <button @click="resetData" class="w-full py-2 text-red-900 text-[9px] font-black uppercase opacity-50 hover:opacity-100 transition-all underline">Clear all simulation data</button>
+            <button @click="resetData" class="w-full py-2 text-red-900 text-[8px] font-black uppercase opacity-40 underline">Clear Data</button>
         </div>
 
         <div v-if="showMagic" class="fixed inset-0 bg-black/90 z-[1000] flex justify-center items-center p-6" @click.self="showMagic = false">
             <div class="bg-slate-900 p-8 rounded-[40px] border border-indigo-500/30 text-center space-y-5 max-w-sm w-full shadow-2xl">
-                <h4 class="font-black text-indigo-400 uppercase italic border-b border-white/5 pb-2 tracking-widest">🪄 Magic Loadout</h4>
+                <h4 class="font-black text-indigo-400 uppercase italic border-b border-white/5 pb-2">🪄 Magic Fill</h4>
                 <select v-model="magicHome" class="input-dark"><option value="small">Townhome</option><option value="medium">Detached</option><option value="large">Villa</option></select>
                 <select v-model="magicFam" class="input-dark"><option value="1-2">1-2 People</option><option value="3-4">3-4 People</option></select>
-                <button @click="applyMagic" class="w-full bg-indigo-600 py-4 rounded-xl font-black text-xs uppercase">Generate</button>
+                <button @click="applyMagic" class="w-full bg-indigo-600 py-4 rounded-xl font-black text-xs uppercase shadow-xl transition-all">Generate</button>
             </div>
         </div>
     </div>
 
 <script>
     const { createApp, ref, computed, watch, onMounted, nextTick } = Vue;
-    const STORAGE_KEY = 'SOLAR_SIM_V718_DATA'; // ✅ ตรงกับเวอร์ชั่นก่อนๆ ข้อมูลจะไหลมาเอง
+    // 🔑 กลับมาใช้กุญแจเดิม เพื่อดึงข้อมูลที่คุณเกตุเคยใส่ไว้ครับ!
+    const STORAGE_KEY = 'SOLAR_SIM_V77_DATA'; 
 
     createApp({
         setup() {
             const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
             const selectedStep = ref(saved.selectedStep || 48), weather = ref(saved.weather || 'sunny'), rate = ref(saved.rate || 4.65);
             const solarKw = ref(saved.solarKw || 5.0), batteryKwh = ref(saved.batteryKwh || 10.0);
-            const appliances = ref(saved.appliances || [{id:Date.now(), name:'Base Load (Auto-Save Active)', type:'fridge', power:400, slots:Array.from({length:24},(_,i)=>i), active: true}]);
+            const appliances = ref(saved.appliances || [{id:Date.now(), name:'Base Fridge', type:'fridge', power:400, slots:Array.from({length:24},(_,i)=>i), active: true}]);
             const showMagic = ref(false), showPorter = ref(false), porterString = ref(''), magicHome = ref('medium'), magicFam = ref('3-4');
             const newItem = ref({name:'', type:'ac_inverter', power:null, slots:[10,11,12,13,14,15,16]});
             const weatherOptions = [{id:'sunny',label:'Sunny',icon:'☀️',impact:1.0},{id:'cloudy',label:'Cloudy',icon:'☁️',impact:0.45},{id:'rainy',label:'Rainy',icon:'🌧️',impact:0.15}];
@@ -204,7 +189,7 @@
                 return { steps: data, kpis: { sufficiency: Math.round((totalSolarUsedKwh/totalLoadKwh)*100)||0, wasted: totalWastedKwh.toFixed(1), savedKwh: totalSavedKwh, totalLoadKwh: totalLoadKwh }};
             });
 
-            // ✅ AUTO-SAVE: จดจำทุกอย่างลงลิ้นชักถาวร
+            // 💾 AUTO-SAVE EVERYTHING
             watch([weather, rate, solarKw, batteryKwh, appliances, selectedStep], () => {
                 localStorage.setItem(STORAGE_KEY, JSON.stringify({ weather: weather.value, rate: rate.value, solarKw: solarKw.value, batteryKwh: batteryKwh.value, appliances: appliances.value, selectedStep: selectedStep.value }));
                 if(chart) {
@@ -245,11 +230,11 @@
                 deleteItem: (id) => { appliances.value = appliances.value.filter(a => a.id !== id); },
                 applyMagic: () => { const v = (magicHome.value==='small'?350:magicHome.value==='medium'?650:1250) + (magicFam.value==='1-2'?150:magicFam.value==='3-4'?300:500); appliances.value.unshift({id: Date.now(), name:'🪄 Magic Profile', type:'general', power:v, slots:Array.from({length:24},(_,i)=>i), active: true}); showMagic.value = false; },
                 openPorter: () => { porterString.value = btoa(JSON.stringify({ solarKw: solarKw.value, batteryKwh: batteryKwh.value, rate: rate.value, appliances: appliances.value })); showPorter.value = true; },
-                copyPorter: () => { navigator.clipboard.writeText(porterString.value); alert('คัดลอก Code แล้วครับ!'); },
-                importPorter: () => { try { const data = JSON.parse(atob(porterString.value)); solarKw.value = data.solarKw; batteryKwh.value = data.batteryKwh; rate.value = data.rate; appliances.value = data.appliances; showPorter.value = false; alert('Import ข้อมูลสำเร็จ!'); } catch(e) { alert('Code ผิดพลาด!'); } },
-                takeSnapshot: () => { html2canvas(document.querySelector("#report-area"), {backgroundColor: "#010409", scale: 2}).then(canvas => { let a = document.createElement('a'); a.download = `Solar-Full-Report.png`; a.href = canvas.toDataURL(); a.click(); }); },
+                copyPorter: () => { navigator.clipboard.writeText(porterString.value); alert('Code Copied!'); },
+                importPorter: () => { try { const data = JSON.parse(atob(porterString.value)); solarKw.value = data.solarKw; batteryKwh.value = data.batteryKwh; rate.value = data.rate; appliances.value = data.appliances; showPorter.value = false; alert('Import Success!'); } catch(e) { alert('Invalid Code!'); } },
+                takeSnapshot: () => { html2canvas(document.querySelector("#report-area"), {backgroundColor: "#010409", scale: 2}).then(canvas => { let a = document.createElement('a'); a.download = `Solar-Sim-Report.png`; a.href = canvas.toDataURL(); a.click(); }); },
                 exportCSV: () => { let csv = "Time,Solar(W),Load(W),SOC(%),Grid(W)\n"; engineResults.value.steps.forEach(d => csv += `${formatTime(d.step)},${d.solar.toFixed(0)},${d.load.toFixed(0)},${d.soc.toFixed(1)},${d.grid.toFixed(0)}\n`); let b = new Blob([csv], { type: 'text/csv' }); let l = document.createElement('a'); l.href = window.URL.createObjectURL(b); l.download = `Solar-Data.csv`; l.click(); },
-                resetData: () => { if(confirm('Reset all data?')) { localStorage.removeItem(STORAGE_KEY); location.reload(); } },
+                resetData: () => { if(confirm('ล้างข้อมูลใหม่?')) { localStorage.removeItem(STORAGE_KEY); location.reload(); } },
                 importFromMain: () => { const s = localStorage.getItem('SOLAR_PRO_PERMANENT_STORAGE'); if(s){ const d = JSON.parse(s); appliances.value = d.appliances.map(a => ({...a, id: Math.random(), active: true, slots: a.slots || Array.from({length:24},(_,i)=>i)})); solarKw.value = d.options[0].solarKw; batteryKwh.value = d.options[0].batteryKwh||0; rate.value = d.rate||4.65; alert('Synced!'); } }
             }
         }
