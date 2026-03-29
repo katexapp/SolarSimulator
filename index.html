@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Solar Sim V.7.15 - Ultimate Integration</title>
+    <title>Solar Sim V.7.16 - Universal Porter</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -10,13 +10,12 @@
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600;900&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Prompt', sans-serif; background: #010409; color: #f8fafc; padding: 15px; }
-        .glass-card { background: rgba(13, 17, 23, 0.9); border: 1px solid rgba(48, 54, 61, 1); border-radius: 1.5rem; padding: 1.5rem; margin-bottom: 1.5rem; }
+        body { font-family: 'Prompt', sans-serif; background: #010409; color: #f8fafc; padding: 10px; }
+        .glass-card { background: rgba(13, 17, 23, 0.9); border: 1px solid rgba(48, 54, 61, 1); border-radius: 1.5rem; padding: 1.5rem; margin-bottom: 1rem; }
         .input-dark { background: #0d1117 !important; border: 1px solid #30363d !important; border-radius: 0.5rem !important; padding: 10px !important; color: white !important; font-weight: 900; width: 100%; font-size: 14px; }
         .hour-btn { width: 26px; height: 26px; font-size: 9px; font-weight: 900; border-radius: 5px; border: 1px solid #30363d; }
         .hour-active { background: #fbbf24; color: #010409; border-color: #fff; }
         .sun-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 30px; height: 30px; background: #fbbf24; border-radius: 50%; border: 3px solid #fff; }
-        .kpi-box { background: rgba(255,255,255,0.03); border-radius: 1rem; border: 1px solid rgba(255,255,255,0.05); padding: 1rem; }
         .bill-card { background: linear-gradient(145deg, #161b22, #0d1117); border: 1px solid #30363d; }
         .drag-handle { cursor: grab !important; padding: 10px; color: #fbbf24; font-size: 18px; }
     </style>
@@ -25,79 +24,57 @@
     <div id="app" class="max-w-7xl mx-auto space-y-4">
         
         <div class="flex flex-wrap gap-2 no-print justify-end mb-2">
-            <button @click="importFromMain" class="bg-indigo-600/20 hover:bg-indigo-600 text-[10px] font-black px-4 py-2 rounded-xl border border-indigo-500/50 transition-all">🔄 SYNC FROM MAIN</button>
-            <button @click="exportCSV" class="bg-slate-800 hover:bg-slate-700 text-[10px] font-black px-4 py-2 rounded-xl border border-white/5">📊 EXCEL (CSV)</button>
-            <button @click="takeSnapshot" class="bg-indigo-600 hover:bg-indigo-500 text-[10px] font-black px-4 py-2 rounded-xl shadow-lg">📸 SAVE IMAGE</button>
-            <button onclick="window.print()" class="bg-emerald-600 hover:bg-emerald-500 text-[10px] font-black px-4 py-2 rounded-xl shadow-lg">🖨️ PRINT PDF</button>
-            <button @click="resetData" class="bg-red-900/40 hover:bg-red-900 text-[10px] font-black px-4 py-2 rounded-xl border border-red-500/20">🧹 RESET</button>
+            <button @click="showPorter = true" class="bg-purple-600/20 hover:bg-purple-600 text-[10px] font-black px-4 py-2 rounded-xl border border-purple-500/50 transition-all">📦 TRANSFER DATA</button>
+            <button @click="importFromMain" class="bg-indigo-600/20 hover:bg-indigo-600 text-[10px] font-black px-4 py-2 rounded-xl border border-indigo-500/50 transition-all">🔄 SYNC MAIN</button>
+            <button @click="exportCSV" class="bg-slate-800 hover:bg-slate-700 text-[10px] font-black px-4 py-2 rounded-xl border border-white/5">📊 EXCEL</button>
+            <button @click="takeSnapshot" class="bg-indigo-600 hover:bg-indigo-500 text-[10px] font-black px-4 py-2 rounded-xl shadow-lg">📸 IMAGE</button>
+            <button onclick="window.print()" class="bg-emerald-600 hover:bg-emerald-500 text-[10px] font-black px-4 py-2 rounded-xl shadow-lg">🖨️ PRINT</button>
+        </div>
+
+        <div v-if="showPorter" class="fixed inset-0 bg-black/95 z-[2000] flex justify-center items-center p-4" @click.self="showPorter = false">
+            <div class="glass-card max-w-2xl w-full border-purple-500/50 p-8 space-y-4">
+                <h2 class="text-xl font-black italic text-purple-400">Universal Data Porter 📦</h2>
+                <p class="text-xs text-slate-500 font-bold uppercase tracking-widest">ใช้สำหรับก๊อปปี้ข้อมูลไปใช้ที่เครื่องอื่น (iPad/Phone)</p>
+                <textarea v-model="porterString" class="w-full h-48 bg-black/50 border border-white/10 rounded-xl p-4 text-[10px] font-mono text-emerald-400 break-all" placeholder="วาง Code ข้อมูลที่นี่..."></textarea>
+                <div class="grid grid-cols-2 gap-4">
+                    <button @click="copyPorter" class="bg-purple-600 py-3 rounded-xl font-black text-xs uppercase shadow-lg">1. COPY MY DATA</button>
+                    <button @click="importPorter" class="bg-emerald-600 py-3 rounded-xl font-black text-xs uppercase shadow-lg">2. IMPORT FROM CODE</button>
+                </div>
+                <button @click="showPorter = false" class="w-full py-2 text-slate-500 text-[10px] font-black uppercase">Close</button>
+            </div>
         </div>
 
         <div id="report-area" class="p-2">
             <div class="flex flex-col lg:flex-row justify-between items-stretch gap-4 mb-4">
-                <div class="flex-1">
-                    <h1 class="text-xl font-black italic text-yellow-400 uppercase tracking-tighter leading-none">SOLAR SIM <span class="text-white text-xs font-normal">V.7.15 ULTIMATE</span></h1>
-                    <p class="text-[9px] text-slate-500 font-bold uppercase italic tracking-widest mt-1">Full Integration | Fixed Bills | Sync Enabled</p>
-                    
-                    <div class="grid grid-cols-2 gap-3 mt-4 text-left">
-                        <div class="kpi-box shadow-inner">
-                            <p class="text-[8px] text-slate-500 uppercase font-black">Self-Sufficiency</p>
-                            <p class="text-2xl font-black text-blue-400">{{ sufficiency }}%</p>
-                        </div>
-                        <div class="kpi-box shadow-inner">
-                            <p class="text-[8px] text-slate-500 uppercase font-black">Energy Wasted</p>
-                            <p class="text-2xl font-black text-orange-500">{{ wasted }} <span class="text-xs">kWh</span></p>
-                        </div>
+                <div class="flex-1 text-left">
+                    <h1 class="text-xl font-black italic text-yellow-400 uppercase tracking-tighter leading-none">SOLAR SIM <span class="text-white text-xs font-normal">V.7.16 PORTER</span></h1>
+                    <p class="text-[9px] text-slate-500 font-bold uppercase italic tracking-widest mt-1">Cross-Platform Sync | Reality Check Ready</p>
+                    <div class="grid grid-cols-2 gap-3 mt-4">
+                        <div class="kpi-box text-center shadow-inner"><p class="text-[8px] text-slate-500 uppercase font-black">Self-Sufficiency</p><p class="text-2xl font-black text-blue-400">{{ sufficiency }}%</p></div>
+                        <div class="kpi-box text-center shadow-inner"><p class="text-[8px] text-slate-500 uppercase font-black">Overflow Energy</p><p class="text-2xl font-black text-orange-500">{{ wasted }} <span class="text-xs">kWh</span></p></div>
                     </div>
                 </div>
-                
                 <div class="bill-card flex-1 rounded-3xl p-6 border-t-4 border-emerald-500 shadow-2xl text-left">
-                    <h3 class="text-xs font-black text-emerald-400 uppercase italic mb-4 tracking-widest">ค่าไฟโดยประมาณ (30 วัน)</h3>
-                    <div class="space-y-4">
-                        <div class="flex justify-between items-center border-b border-white/5 pb-2">
-                            <span class="text-[10px] text-slate-400 uppercase">บิลปกติ (ไม่มีโซล่า)</span>
-                            <span class="text-lg font-black text-slate-300 line-through">฿{{ formatNumber(monthlyOriginal) }}</span>
-                        </div>
-                        <div class="flex justify-between items-center border-b border-white/5 pb-2">
-                            <span class="text-[10px] text-emerald-400 font-bold uppercase">บิลใหม่ (ติดโซล่าแล้ว)</span>
-                            <span class="text-2xl font-black text-white">฿{{ formatNumber(monthlyNew) }}</span>
-                        </div>
-                        <div class="flex justify-between items-center bg-emerald-500/10 p-3 rounded-xl border border-emerald-500/20">
-                            <span class="text-[11px] text-emerald-400 font-black uppercase tracking-tighter">ส่วนต่างประหยัดได้</span>
-                            <span class="text-3xl font-black text-emerald-400 italic">฿{{ formatNumber(monthlySavings) }}</span>
-                        </div>
+                    <h3 class="text-xs font-black text-emerald-400 uppercase italic mb-4 tracking-widest">MONTHLY BILL (30 DAYS)</h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between border-b border-white/5 pb-2"><span class="text-[10px] text-slate-400 uppercase">Original Bill</span><span class="text-lg font-black text-slate-400 line-through">฿{{ formatNumber(monthlyOriginal) }}</span></div>
+                        <div class="flex justify-between border-b border-white/5 pb-2"><span class="text-[10px] text-emerald-400 font-bold uppercase">New Bill</span><span class="text-2xl font-black text-white">฿{{ formatNumber(monthlyNew) }}</span></div>
+                        <div class="flex justify-between items-center bg-emerald-500/10 p-3 rounded-xl border border-emerald-500/20"><span class="text-[11px] text-emerald-400 font-black uppercase">Savings</span><span class="text-3xl font-black text-emerald-400 italic">฿{{ formatNumber(monthlySavings) }}</span></div>
                     </div>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 text-left">
                 <div class="lg:col-span-8 space-y-4">
-                    <div class="glass-card shadow-2xl">
-                        <div class="flex justify-between items-center mb-4 text-[9px] font-black uppercase text-slate-500">
-                            <span class="no-print">Weather: {{ weather }}</span>
-                            <div class="flex gap-4">
-                                <span class="text-yellow-400">● PV</span> <span class="text-blue-400">● Load</span> <span class="text-purple-500">● SOC%</span>
-                            </div>
-                        </div>
-                        <div class="h-[280px] w-full relative"><canvas id="proChart"></canvas></div>
-                    </div>
-
+                    <div class="glass-card shadow-2xl relative"><div class="h-[280px] w-full relative"><canvas id="proChart"></canvas></div></div>
                     <div class="glass-card border-t-4 border-yellow-500 grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                        <div class="text-left">
-                            <label class="text-[9px] text-slate-500 font-black uppercase tracking-widest">TIMELINE SELECTION</label>
+                        <div>
                             <h2 class="text-7xl font-black italic text-white leading-none">{{formatTime(selectedStep)}}</h2>
                             <input type="range" v-model="selectedStep" min="0" max="95" class="sun-slider w-full h-2 bg-slate-800 rounded-full appearance-none mt-6 no-print">
                         </div>
-                        <div class="grid grid-cols-2 gap-4 bg-black/50 p-4 rounded-3xl border border-white/5">
-                            <div class="border-r border-white/5 pr-2">
-                                <p class="text-[8px] font-black text-emerald-400 uppercase italic">Hour Saved</p>
-                                <p class="text-2xl font-black text-white">฿{{(currentStepData.savedVal).toFixed(2)}}</p>
-                            </div>
-                            <div class="pl-2">
-                                <p class="text-[8px] font-black text-red-400 uppercase italic">Hour Cost</p>
-                                <p class="text-2xl font-black italic" :class="currentStepData.grid > 0 ? 'text-red-400' : 'text-emerald-400'">
-                                    {{currentStepData.grid > 0 ? '฿'+(currentStepData.grid/1000*rate).toFixed(2) : 'FREE'}}
-                                </p>
-                            </div>
+                        <div class="grid grid-cols-2 gap-4 bg-black/50 p-4 rounded-3xl">
+                            <div><p class="text-[8px] font-black text-emerald-400 uppercase">Saving</p><p class="text-2xl font-black text-white">฿{{(currentStepData.savedVal).toFixed(2)}}</p></div>
+                            <div><p class="text-[8px] font-black text-red-400 uppercase">Paying</p><p class="text-2xl font-black italic" :class="currentStepData.grid > 0 ? 'text-red-400' : 'text-emerald-400'">{{currentStepData.grid > 0 ? '฿'+(currentStepData.grid/1000*rate).toFixed(2) : 'FREE'}}</p></div>
                         </div>
                     </div>
                 </div>
@@ -105,7 +82,7 @@
                 <div class="lg:col-span-4">
                     <div class="glass-card border-t-4 border-slate-700 h-full">
                         <div class="flex justify-between items-center border-b border-white/5 pb-2 mb-4">
-                            <h3 class="text-[10px] font-black text-slate-400 uppercase italic tracking-widest">💡 DEMAND PROFILE</h3>
+                            <h3 class="text-[10px] font-black text-slate-400 uppercase italic tracking-widest">💡 HOUSEHOLD DEMAND</h3>
                             <button @click="showMagic = true" class="text-[9px] text-indigo-400 font-black underline no-print">MAGIC 🪄</button>
                         </div>
                         <div id="drag-list" class="space-y-2 max-h-[600px] overflow-y-auto pr-1">
@@ -113,19 +90,11 @@
                                  :class="item.active ? 'bg-white/5 border-white/10' : 'opacity-30 no-print'"
                                  class="flex flex-col p-3 rounded-xl border border-white/5 transition-all device-item cursor-pointer">
                                 <div class="flex justify-between items-start">
-                                    <div class="flex items-center gap-2">
-                                        <span class="drag-handle no-print">☰</span>
-                                        <span class="font-black text-xs" @click="item.active = !item.active">{{ item.name }}</span>
-                                    </div>
+                                    <div class="flex items-center gap-2"><span class="drag-handle no-print">☰</span><span class="font-black text-xs" @click="item.active = !item.active">{{ item.name }}</span></div>
                                     <span class="text-[9px] font-bold text-indigo-400 uppercase">{{ formatNumber(getWatts(item)) }} W</span>
                                 </div>
-                                <div class="flex gap-0.5 mt-2 overflow-hidden">
-                                    <div v-for="h in 24" :key="h-1" class="flex-1 h-1 rounded-full" :class="item.slots.includes(h-1)?'bg-indigo-400':'bg-slate-800'"></div>
-                                </div>
-                                <div class="mt-2 text-[8px] text-slate-600 font-bold no-print flex justify-between">
-                                    <span>{{item.active?'ACTIVE':'OFF'}}</span>
-                                    <button @click.stop="deleteItem(item.id)" class="text-red-900 uppercase">Delete</button>
-                                </div>
+                                <div class="flex gap-0.5 mt-2 overflow-hidden"><div v-for="h in 24" :key="h-1" class="flex-1 h-1 rounded-full" :class="item.slots.includes(h-1)?'bg-indigo-400':'bg-slate-800'"></div></div>
+                                <div class="mt-2 flex justify-between no-print"><span class="text-[8px] text-slate-600 font-bold uppercase">{{item.active?'ON':'OFF'}}</span><button @click.stop="deleteItem(item.id)" class="text-red-900 text-[8px] uppercase">Delete</button></div>
                             </div>
                         </div>
                     </div>
@@ -137,35 +106,26 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div><label class="text-[8px] font-black text-slate-500 uppercase ml-1">PV (kW)</label><input type="number" v-model.number="solarKw" step="0.1" class="input-dark"></div>
                 <div><label class="text-[8px] font-black text-slate-500 uppercase ml-1">Batt (kWh)</label><input type="number" v-model.number="batteryKwh" step="0.1" class="input-dark"></div>
-                <div><label class="text-[8px] font-black text-slate-500 uppercase ml-1">Rate (฿/Unit)</label><input type="number" v-model.number="rate" step="0.01" class="input-dark"></div>
+                <div><label class="text-[8px] font-black text-slate-500 uppercase ml-1">Rate (฿)</label><input type="number" v-model.number="rate" step="0.01" class="input-dark"></div>
             </div>
             <div class="pt-4 border-t border-white/5 space-y-4">
                 <input type="text" v-model="newItem.name" placeholder="ชื่ออุปกรณ์" class="input-dark">
                 <div class="grid grid-cols-2 gap-3">
                     <select v-model="newItem.type" class="input-dark">
-                        <option value="ac_inverter">AC Inverter (BTU)</option>
-                        <option value="ac_standard">AC Standard (BTU)</option>
-                        <option value="fridge">Fridge (W)</option>
-                        <option value="computer">Computer (W)</option>
-                        <option value="ev">EV Charger (W)</option>
-                        <option value="general">General (W)</option>
+                        <option value="ac_inverter">AC Inverter (BTU)</option><option value="ac_standard">AC Standard (BTU)</option><option value="fridge">Fridge (W)</option><option value="computer">Computer (W)</option><option value="ev">EV Charger (W)</option><option value="general">General (W)</option>
                     </select>
                     <input type="number" v-model.number="newItem.power" placeholder="BTU / Watts" class="input-dark">
                 </div>
-                <div class="bg-black/40 p-3 rounded-xl border border-white/5 text-center">
-                    <div class="grid grid-cols-12 md:grid-cols-24 gap-1">
-                        <button v-for="h in 24" :key="h-1" @click="toggleNewHour(h-1)" :class="newItem.slots.includes(h-1)?'hour-active shadow-sm shadow-yellow-500/50':'bg-slate-800 text-slate-500'" class="hour-btn">{{h-1}}</button>
-                    </div>
-                </div>
-                <button @click="addItem" class="w-full bg-indigo-600 py-3 rounded-xl font-black text-[10px] uppercase shadow-lg">+ ADD TO SCHEDULE</button>
+                <div class="bg-black/40 p-3 rounded-xl"><div class="grid grid-cols-12 md:grid-cols-24 gap-1"><button v-for="h in 24" :key="h-1" @click="toggleNewHour(h-1)" :class="newItem.slots.includes(h-1)?'hour-active':'bg-slate-800 text-slate-500'" class="hour-btn">{{h-1}}</button></div></div>
+                <button @click="addItem" class="w-full bg-indigo-600 py-3 rounded-xl font-black text-[10px] uppercase shadow-lg hover:scale-[1.01] transition-all">+ ADD TO SCHEDULE</button>
             </div>
         </div>
 
         <div v-if="showMagic" class="fixed inset-0 bg-black/90 z-[1000] flex justify-center items-center p-6" @click.self="showMagic = false">
             <div class="bg-slate-900 p-8 rounded-[40px] border border-indigo-500/30 text-center space-y-5 max-w-sm w-full shadow-2xl">
-                <h4 class="font-black text-indigo-400 uppercase italic border-b border-white/5 pb-2">🪄 Magic Fill</h4>
+                <h4 class="font-black text-indigo-400 uppercase italic border-b border-white/5 pb-2">🪄 Magic Profile</h4>
                 <select v-model="magicHome" class="input-dark"><option value="small">Townhome</option><option value="medium">Detached</option><option value="large">Villa</option></select>
-                <select v-model="magicFam" class="input-dark"><option value="1-2">1-2 คน</option><option value="3-4">3-4 คน</option></select>
+                <select v-model="magicFam" class="input-dark"><option value="1-2">1-2 People</option><option value="3-4">3-4 People</option></select>
                 <button @click="applyMagic" class="w-full bg-indigo-600 py-4 rounded-xl font-black text-xs uppercase">Generate</button>
             </div>
         </div>
@@ -173,18 +133,15 @@
 
 <script>
     const { createApp, ref, computed, watch, onMounted, nextTick } = Vue;
-    const STORAGE_KEY = 'SOLAR_SIM_V715_DATA';
+    const STORAGE_KEY = 'SOLAR_SIM_V716_DATA';
 
     createApp({
         setup() {
             const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-            const selectedStep = ref(saved.selectedStep || 48);
-            const weather = ref(saved.weather || 'sunny');
-            const rate = ref(saved.rate || 4.65);
-            const solarKw = ref(saved.solarKw || 5.0);
-            const batteryKwh = ref(saved.batteryKwh || 10.0);
+            const selectedStep = ref(saved.selectedStep || 48), weather = ref(saved.weather || 'sunny'), rate = ref(saved.rate || 4.65);
+            const solarKw = ref(saved.solarKw || 5.0), batteryKwh = ref(saved.batteryKwh || 10.0);
             const appliances = ref(saved.appliances || [{id:Date.now(), name:'Base Load', type:'fridge', power:400, slots:Array.from({length:24},(_,i)=>i), active: true}]);
-            const showMagic = ref(false), magicHome = ref('medium'), magicFam = ref('3-4');
+            const showMagic = ref(false), showPorter = ref(false), porterString = ref(''), magicHome = ref('medium'), magicFam = ref('3-4');
             const newItem = ref({name:'', type:'ac_inverter', power:null, slots:[10,11,12,13,14,15,16]});
             const weatherOptions = [{id:'sunny',label:'Sunny',icon:'☀️',impact:1.0},{id:'cloudy',label:'Cloudy',icon:'☁️',impact:0.45},{id:'rainy',label:'Rainy',icon:'🌧️',impact:0.15}];
             let chart = null;
@@ -203,62 +160,38 @@
             const getSolarAt = (step) => {
                 const hour = step / 4; if(hour < 6 || hour > 18) return 0;
                 const shape = Math.sin((hour - 6) * Math.PI / 12);
-                const noise = 0.96 + (Math.sin(step * 0.8) * 0.04);
-                return (solarKw.value * 1000 * shape * 0.92 * (hour > 12.5 ? 0.88 : 1.0) * weatherOptions.find(o=>o.id===weather.value).impact * noise);
+                return (solarKw.value * 1000 * shape * 0.92 * (hour > 12.5 ? 0.88 : 1.0) * weatherOptions.find(o=>o.id===weather.value).impact * (0.96 + Math.sin(step * 0.8) * 0.04));
             };
 
             const engineResults = computed(() => {
                 let data = [], storedWh = 0, capWh = batteryKwh.value * 1000, dt = 0.25;
                 let totalSolarUsedKwh = 0, totalLoadKwh = 0, totalSavedKwh = 0, totalWastedKwh = 0;
                 for(let step = 0; step <= 95; step++) {
-                    const h = Math.floor(step / 4);
-                    const solar = getSolarAt(step);
+                    const h = Math.floor(step / 4), solar = getSolarAt(step);
                     const load = appliances.value.reduce((s, a) => s + (a.active && a.slots.includes(h) ? getWatts(a) : 0), 0);
-                    const deficit = load - solar;
-                    let batteryContribution = 0;
+                    const deficit = load - solar; let batteryContribution = 0;
                     if (deficit > 0) {
                         batteryContribution = Math.min(deficit, storedWh * 0.95, capWh * 0.5 * dt);
                         storedWh -= (batteryContribution / 0.95);
                     } else {
-                        const charge = Math.min(Math.abs(deficit) * 0.95, capWh - storedWh);
-                        storedWh += charge;
-                        totalWastedKwh += ((Math.abs(deficit) * 0.95 - charge) / 1000) * dt;
+                        const chargePossible = Math.abs(deficit) * 0.95;
+                        const actualCharge = Math.min(chargePossible, capWh - storedWh);
+                        storedWh += actualCharge; totalWastedKwh += ((chargePossible - actualCharge) / 1000) * dt;
                     }
                     if(storedWh > capWh) storedWh = capWh; if(storedWh < 0) storedWh = 0;
                     const savedKwhStep = ((Math.min(load, solar) + batteryContribution) / 1000) * dt;
-                    totalLoadKwh += (load / 1000) * dt;
-                    totalSolarUsedKwh += savedKwhStep;
-                    totalSavedKwh += savedKwhStep;
+                    totalLoadKwh += (load / 1000) * dt; totalSolarUsedKwh += savedKwhStep; totalSavedKwh += savedKwhStep;
                     data.push({ step, solar, load, soc: capWh > 0 ? (storedWh/capWh*100) : 0, grid: Math.max(0, deficit - batteryContribution), savedVal: savedKwhStep * rate.value });
                 }
                 return { steps: data, kpis: { sufficiency: Math.round((totalSolarUsedKwh/totalLoadKwh)*100)||0, wasted: totalWastedKwh.toFixed(1), savedKwh: totalSavedKwh, totalLoadKwh: totalLoadKwh }};
             });
 
             watch([weather, rate, solarKw, batteryKwh, appliances, selectedStep], () => {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify({
-                    weather: weather.value, rate: rate.value, solarKw: solarKw.value, batteryKwh: batteryKwh.value, appliances: appliances.value, selectedStep: selectedStep.value
-                }));
+                localStorage.setItem(STORAGE_KEY, JSON.stringify({ weather: weather.value, rate: rate.value, solarKw: solarKw.value, batteryKwh: batteryKwh.value, appliances: appliances.value, selectedStep: selectedStep.value }));
                 updateChart();
             }, { deep: true });
 
-            const updateChart = () => {
-                if (!chart) return;
-                const d = engineResults.value.steps;
-                chart.data.labels = d.map(x => formatTime(x.step));
-                chart.data.datasets[0].data = d.map(x => x.solar);
-                chart.data.datasets[1].data = d.map(x => x.load);
-                chart.data.datasets[2].data = d.map(x => x.soc);
-                chart.update();
-            };
-
-            const initSortable = () => {
-                nextTick(() => {
-                    const el = document.getElementById('drag-list');
-                    if (el) Sortable.create(el, { handle: '.drag-handle', animation: 200, onEnd: (evt) => {
-                        const item = appliances.value.splice(evt.oldIndex, 1)[0]; appliances.value.splice(evt.newIndex, 0, item);
-                    }});
-                });
-            };
+            const updateChart = () => { if (chart) { const d = engineResults.value.steps; chart.data.labels = d.map(x => formatTime(x.step)); chart.data.datasets[0].data = d.map(x => x.solar); chart.data.datasets[1].data = d.map(x => x.load); chart.data.datasets[2].data = d.map(x => x.soc); chart.update(); } };
 
             onMounted(() => {
                 const ctx = document.getElementById('proChart').getContext('2d');
@@ -270,54 +203,30 @@
                     ]},
                     options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { ticks: { color: '#475569' } }, y1: { position: 'right', min: 0, max: 100, grid: { display: false }, ticks: { color: '#8b5cf6' } } } }
                 });
-                updateChart(); initSortable();
+                updateChart();
+                nextTick(() => { Sortable.create(document.getElementById('drag-list'), { handle: '.drag-handle', animation: 200, onEnd: (evt) => { const item = appliances.value.splice(evt.oldIndex, 1)[0]; appliances.value.splice(evt.newIndex, 0, item); } }); });
             });
 
             return {
-                selectedStep, weather, rate, solarKw, batteryKwh, appliances, newItem, weatherOptions, showMagic, magicHome, magicFam,
-                formatNumber, formatTime, getWatts,
+                selectedStep, weather, rate, solarKw, batteryKwh, appliances, newItem, weatherOptions, showMagic, magicHome, magicFam, showPorter, porterString,
+                formatNumber, formatTime, getWatts, engineResults,
                 sufficiency: computed(() => engineResults.value.kpis.sufficiency),
                 wasted: computed(() => engineResults.value.kpis.wasted),
                 monthlyOriginal: computed(() => Math.round(engineResults.value.kpis.totalLoadKwh * rate.value * 30)),
                 monthlyNew: computed(() => Math.round((engineResults.value.kpis.totalLoadKwh - engineResults.value.kpis.savedKwh) * rate.value * 30)),
                 monthlySavings: computed(() => Math.round(engineResults.value.kpis.savedKwh * rate.value * 30)),
                 currentStepData: computed(() => engineResults.value.steps[selectedStep.value]),
-                toggleNewHour: (h) => {
-                    const idx = newItem.value.slots.indexOf(h);
-                    if(idx > -1) newItem.value.slots.splice(idx, 1); else newItem.value.slots.push(h);
-                },
-                addItem: () => { 
-                    if(newItem.value.name && newItem.value.power){ 
-                        appliances.value.unshift({id: Date.now(), ...newItem.value, active: true, slots: [...newItem.value.slots]}); 
-                        newItem.value={name:'', type:'ac_inverter', power:null, slots:[10,11,12,13,14,15,16]};
-                    } 
-                },
+                toggleNewHour: (h) => { const idx = newItem.value.slots.indexOf(h); if(idx > -1) newItem.value.slots.splice(idx, 1); else newItem.value.slots.push(h); },
+                addItem: () => { if(newItem.value.name && newItem.value.power){ appliances.value.unshift({id: Date.now(), ...newItem.value, active: true, slots: [...newItem.value.slots]}); newItem.value={name:'', type:'ac_inverter', power:null, slots:[10,11,12,13,14,15,16]}; } },
                 deleteItem: (id) => { appliances.value = appliances.value.filter(a => a.id !== id); },
-                applyMagic: () => { 
-                    const v = (magicHome.value==='small'?350:magicHome.value==='medium'?650:1250) + (magicFam.value==='1-2'?150:magicFam.value==='3-4'?300:500);
-                    appliances.value.unshift({id: Date.now(), name:'🪄 ไฟพื้นฐาน (Always On)', type:'general', power:v, slots:Array.from({length:24},(_,i)=>i), active: true}); 
-                    showMagic.value = false;
-                },
-                takeSnapshot: () => {
-                    html2canvas(document.querySelector("#report-area"), {backgroundColor: "#010409", scale: 2}).then(canvas => {
-                        let a = document.createElement('a'); a.download = `Solar-Sim.png`; a.href = canvas.toDataURL(); a.click();
-                    });
-                },
-                exportCSV: () => {
-                    let csv = "Time,Solar(W),Load(W),SOC(%),Grid(W),Saving(฿)\n";
-                    engineResults.value.steps.forEach(d => csv += `${formatTime(d.step)},${d.solar.toFixed(0)},${d.load.toFixed(0)},${d.soc.toFixed(1)},${d.grid.toFixed(0)},${d.savedVal.toFixed(2)}\n`);
-                    let b = new Blob([csv], { type: 'text/csv' }); let l = document.createElement('a'); l.href = window.URL.createObjectURL(b); l.download = `Solar-Simulation-Data.csv`; l.click();
-                },
-                resetData: () => { if(confirm('ล้างข้อมูลทั้งหมด?')) { localStorage.removeItem(STORAGE_KEY); location.reload(); } },
-                importFromMain: () => {
-                    const s = localStorage.getItem('SOLAR_PRO_PERMANENT_STORAGE');
-                    if(s){ 
-                        const d = JSON.parse(s); 
-                        appliances.value = d.appliances.map(a => ({...a, id: Math.random(), active: true, slots: a.slots || Array.from({length:24},(_,i)=>i)})); 
-                        solarKw.value = d.options[0].solarKw; batteryKwh.value = d.options[0].batteryKwh||0; rate.value = d.rate||4.65;
-                        alert('Synced Successfully!');
-                    }
-                }
+                applyMagic: () => { const v = (magicHome.value==='small'?350:magicHome.value==='medium'?650:1250) + (magicFam.value==='1-2'?150:magicFam.value==='3-4'?300:500); appliances.value.unshift({id: Date.now(), name:'🪄 Magic Baseload', type:'general', power:v, slots:Array.from({length:24},(_,i)=>i), active: true}); showMagic.value = false; },
+                // 📦 Data Porter Functions
+                copyPorter: () => { const data = { solarKw: solarKw.value, batteryKwh: batteryKwh.value, rate: rate.value, appliances: appliances.value }; porterString.value = btoa(JSON.stringify(data)); navigator.clipboard.writeText(porterString.value); alert('Data Copied! เอาไปวางใน iPad ได้เลยครับ'); },
+                importPorter: () => { try { const data = JSON.parse(atob(porterString.value)); solarKw.value = data.solarKw; batteryKwh.value = data.batteryKwh; rate.value = data.rate; appliances.value = data.appliances; showPorter.value = false; alert('Import Success!'); } catch(e) { alert('Invalid Code!'); } },
+                takeSnapshot: () => { html2canvas(document.querySelector("#report-area"), {backgroundColor: "#010409", scale: 2}).then(canvas => { let a = document.createElement('a'); a.download = `Solar-Sim.png`; a.href = canvas.toDataURL(); a.click(); }); },
+                exportCSV: () => { let csv = "Time,Solar(W),Load(W),SOC(%),Grid(W)\n"; engineResults.value.steps.forEach(d => csv += `${formatTime(d.step)},${d.solar.toFixed(0)},${d.load.toFixed(0)},${d.soc.toFixed(1)},${d.grid.toFixed(0)}\n`); let b = new Blob([csv], { type: 'text/csv' }); let l = document.createElement('a'); l.href = window.URL.createObjectURL(b); l.download = `Solar-Simulation.csv`; l.click(); },
+                resetData: () => { if(confirm('Reset all?')) { localStorage.removeItem(STORAGE_KEY); location.reload(); } },
+                importFromMain: () => { const s = localStorage.getItem('SOLAR_PRO_PERMANENT_STORAGE'); if(s){ const d = JSON.parse(s); appliances.value = d.appliances.map(a => ({...a, id: Math.random(), active: true, slots: a.slots || Array.from({length:24},(_,i)=>i)})); solarKw.value = d.options[0].solarKw; batteryKwh.value = d.options[0].batteryKwh||0; rate.value = d.rate||4.65; alert('Synced!'); } }
             }
         }
     }).mount('#app');
