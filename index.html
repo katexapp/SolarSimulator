@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Solar Sim V.7.53 - Drag Is Back</title>
+    <title>Solar Sim V.7.54 - Responsive Drag</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -18,15 +18,16 @@
         .sun-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 30px; height: 30px; background: #fbbf24; border-radius: 50%; border: 3px solid #fff; cursor: pointer; }
         .bill-card { background: linear-gradient(145deg, #161b22, #0d1117); border: 1px solid #30363d; }
         .fixed-toolbar { background: rgba(22, 27, 34, 0.95); border-bottom: 1px solid #30363d; position: sticky; top: 0; z-index: 1000; padding: 12px; margin: -10px -10px 20px -10px; backdrop-filter: blur(10px); }
-        .drag-handle { cursor: grab !important; color: #fbbf24; font-size: 18px; padding-right: 10px; }
+        .drag-handle { cursor: grab !important; color: #fbbf24; font-size: 18px; padding: 10px; margin-left: -10px; }
         .check-circle { width: 20px; height: 20px; border-radius: 50%; border: 2px solid #484f58; display: flex; align-items: center; justify-content: center; }
         .check-active { background: #fbbf24; border-color: #fbbf24; }
+        [v-cloak] { display: none; }
     </style>
 </head>
 <body class="md:p-6 text-left">
-    <div id="app">
+    <div id="app" v-cloak>
         <div class="fixed-toolbar no-print flex flex-wrap gap-2 justify-end items-center">
-            <div class="mr-auto hidden md:block text-yellow-500 font-black italic text-xs uppercase tracking-widest">Solar Sim V.7.53 STABLE</div>
+            <div class="mr-auto hidden md:block text-yellow-500 font-black italic text-xs uppercase tracking-widest">V.7.54 STABLE DRAG</div>
             <button @click="takeSnapshot" class="bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-black px-5 py-2.5 rounded-xl shadow-lg uppercase">📸 Save Image</button>
             <button onclick="window.print()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-black px-5 py-2.5 rounded-xl shadow-lg uppercase">🖨️ Print PDF</button>
             <button @click="resetData" class="bg-red-600 hover:bg-red-500 text-white text-[11px] font-black px-5 py-2.5 rounded-xl shadow-lg uppercase">🧹 Reset</button>
@@ -59,7 +60,7 @@
                     <div class="glass-card shadow-2xl h-[340px] relative"><canvas id="proChart"></canvas></div>
                     <div class="glass-card border-t-4 border-yellow-500 grid grid-cols-1 md:grid-cols-2 gap-6 items-center p-6 text-left">
                         <div>
-                            <h2 class="text-7xl font-black text-white leading-none text-center md:text-left">{{formatTime(selectedStep)}}</h2>
+                            <h2 class="text-7xl font-black text-white leading-none uppercase">{{formatTime(selectedStep)}}</h2>
                             <input type="range" v-model="selectedStep" min="0" max="95" class="sun-slider w-full h-2 bg-slate-800 rounded-full appearance-none mt-6 no-print">
                         </div>
                         <div class="grid grid-cols-2 gap-4 bg-black/50 p-4 rounded-3xl border border-white/5 shadow-inner">
@@ -76,7 +77,7 @@
                             <button @click="applyMagic" class="text-[9px] text-indigo-400 font-black underline no-print uppercase tracking-widest">🪄 Magic Fill</button>
                         </div>
                         <div id="drag-list" class="space-y-2">
-                            <div v-for="item in appliances" :key="item.id" @click="item.active = !item.active" :class="item.active ? 'bg-white/5 shadow-lg' : 'opacity-30 no-print'" class="flex flex-col p-4 rounded-xl border border-white/5 transition-all cursor-pointer">
+                            <div v-for="item in appliances" :key="item.id" :data-id="item.id" @click="item.active = !item.active" :class="item.active ? 'bg-white/5 border-white/10 shadow-lg' : 'opacity-30 no-print'" class="flex flex-col p-4 rounded-xl border border-white/5 transition-all cursor-pointer">
                                 <div class="flex justify-between items-center mb-2">
                                     <div class="flex items-center">
                                         <span class="drag-handle no-print" @click.stop="">☰</span>
@@ -84,7 +85,7 @@
                                         <span class="font-black text-xs uppercase">{{ item.name }}</span>
                                     </div>
                                     <span class="text-[10px] font-bold text-indigo-400 uppercase">
-                                        {{ (item.type==='ac_inverter'||item.type==='ac_standard') ? formatNumber(item.power) + ' BTU' : formatNumber(item.power) + ' W' }}
+                                        {{ (item.type.includes('ac')) ? formatNumber(item.power) + ' BTU' : formatNumber(item.power) + ' W' }}
                                     </span>
                                 </div>
                                 <div class="flex gap-0.5 mt-1 px-1"><div v-for="h in 24" :key="h-1" class="flex-1 h-1 rounded-full" :class="item.slots.includes(h-1)?'bg-indigo-400':'bg-slate-800'"></div></div>
@@ -103,26 +104,24 @@
                 <div><label class="text-[8px] font-black text-slate-500 uppercase ml-1">Rate (฿)</label><input type="number" v-model.number="rate" step="0.01" class="input-dark"></div>
             </div>
             <div class="pt-4 border-t border-white/5 space-y-4">
-                <input type="text" v-model="newItem.name" placeholder="Device Name" class="input-dark">
+                <input type="text" v-model="newItem.name" placeholder="ชื่อเครื่องใช้ไฟฟ้า" class="input-dark">
                 <div class="grid grid-cols-2 gap-3">
                     <select v-model="newItem.type" class="input-dark">
                         <option value="ac_inverter">AC Inverter (BTU)</option>
                         <option value="ac_standard">AC Standard (BTU)</option>
-                        <option value="fridge">Fridge (Watts)</option>
-                        <option value="computer">Computer (Watts)</option>
-                        <option value="ev">EV Charger (Watts)</option>
-                        <option value="watt">General (Watts)</option>
+                        <option value="fridge">Fridge (Watt)</option>
+                        <option value="computer">Computer (Watt)</option>
+                        <option value="ev">EV Charger (Watt)</option>
+                        <option value="watt">General (Watt)</option>
                     </select>
                     <div class="relative w-full">
-                        <input type="number" v-model.number="newItem.power" :placeholder="(newItem.type==='ac_inverter'||newItem.type==='ac_standard') ? 'Input BTU' : 'Input Watts'" class="input-dark pr-10">
-                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-500">
-                            {{ (newItem.type==='ac_inverter'||newItem.type==='ac_standard') ? 'BTU' : 'W' }}
-                        </span>
+                        <input type="number" v-model.number="newItem.power" :placeholder="(newItem.type.includes('ac')) ? 'ใส่ค่า BTU' : 'ใส่ค่า Watts'" class="input-dark pr-10">
+                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-500">{{ newItem.type.includes('ac') ? 'BTU' : 'W' }}</span>
                     </div>
                 </div>
                 <div class="bg-black/40 p-4 rounded-xl text-center">
                     <div class="flex justify-between items-center mb-3 px-1">
-                        <p class="text-[8px] text-slate-500 uppercase font-black italic">Operations</p>
+                        <p class="text-[8px] text-slate-500 uppercase font-black tracking-widest italic">Hours</p>
                         <button @click="toggleAllDay" class="bg-indigo-600 text-white px-4 py-1 rounded-lg text-[9px] font-black uppercase shadow-lg transition-all active:scale-95">⚡ Select 24h</button>
                     </div>
                     <div class="grid grid-cols-12 md:grid-cols-24 gap-1"><button v-for="h in 24" :key="h-1" @click="toggleNewHour(h-1)" :class="newItem.slots.includes(h-1)?'hour-active shadow-sm shadow-yellow-500/50':'bg-slate-800 text-slate-500'" class="hour-btn transition-all">{{h-1}}</button></div>
@@ -179,9 +178,19 @@
                 return { steps: d, kpis: { sufficiency: Math.round((tSv/tL)*100)||0, wasted: tW.toFixed(1), savedKwh: tSv, totalLoadKwh: tL }};
             });
 
-            const sync = () => { localStorage.setItem(STORAGE_KEY, JSON.stringify({ rate: rate.value, solarKw: solarKw.value, batteryKwh: batteryKwh.value, appliances: appliances.value, selectedStep: selectedStep.value })); };
+            const sync = () => localStorage.setItem(STORAGE_KEY, JSON.stringify({ rate: rate.value, solarKw: solarKw.value, batteryKwh: batteryKwh.value, appliances: appliances.value, selectedStep: selectedStep.value }));
 
-            watch([rate, solarKw, batteryKwh, selectedStep], () => { sync(); if(chart) { const d = engine.value.steps; chart.data.labels = d.map(x=>formatTime(x.s)); chart.data.datasets[0].data = d.map(x=>x.solar); chart.data.datasets[1].data = d.map(x=>x.load); chart.data.datasets[2].data = d.map(x=>x.soc); chart.update('none'); } });
+            watch([rate, solarKw, batteryKwh, selectedStep], () => { 
+                sync(); 
+                if(chart) { 
+                    const d = engine.value.steps; 
+                    chart.data.labels = d.map(x=>formatTime(x.s)); 
+                    chart.data.datasets[0].data = d.map(x=>x.solar); 
+                    chart.data.datasets[1].data = d.map(x=>x.load); 
+                    chart.data.datasets[2].data = d.map(x=>x.soc); 
+                    chart.update('none'); 
+                } 
+            });
             watch(appliances, () => { sync(); if(chart) chart.update('none'); }, { deep: true });
 
             onMounted(() => {
@@ -190,20 +199,18 @@
                     { label: 'PV', borderColor: '#fbbf24', data: [], fill: true, tension: 0.4, pointRadius: 0, backgroundColor: 'rgba(251, 191, 36, 0.05)' },
                     { label: 'Load', borderColor: '#60a5fa', data: [], tension: 0.3, pointRadius: 0 },
                     { label: 'SOC', borderColor: '#8b5cf6', data: [], yAxisID: 'y1', borderDash: [3, 3], pointRadius: 0 }
-                ]}, options: { responsive: true, maintainAspectRatio: false, animation: false, scales: { y: { ticks: { color: '#475569' } }, y1: { position: 'right', min: 0, max: 100, display: true, ticks: { color: '#8b5cf6' } } } }});
+                ]}, options: { responsive: true, maintainAspectRatio: false, animation: false, scales: { y1: { position: 'right', min: 0, max: 100, display: true, ticks: { color: '#8b5cf6' } } } }});
                 const d = engine.value.steps; chart.data.labels = d.map(x=>formatTime(x.s)); chart.data.datasets[0].data = d.map(x=>x.solar); chart.data.datasets[1].data = d.map(x=>x.load); chart.data.datasets[2].data = d.map(x=>x.soc); chart.update();
 
-                // 🎯 ติดตั้งระบบลากหลัง Render เสร็จ
                 nextTick(() => {
                     const el = document.getElementById('drag-list');
                     sortable = Sortable.create(el, {
                         handle: '.drag-handle',
-                        animation: 150,
+                        animation: 200,
                         onEnd: (evt) => {
-                            const list = [...appliances.value];
-                            const movedItem = list.splice(evt.oldIndex, 1)[0];
-                            list.splice(evt.newIndex, 0, movedItem);
-                            appliances.value = list;
+                            const newOrder = sortable.toArray(); // Get IDs from data-id
+                            const updatedList = newOrder.map(id => appliances.value.find(a => a.id.toString() === id));
+                            appliances.value = updatedList; // 🎯 Force Vue to update state
                         }
                     });
                 });
@@ -217,8 +224,8 @@
                 toggleAllDay: () => { newItem.value.slots = newItem.value.slots.length === 24 ? [] : Array.from({length: 24}, (_, i) => i); },
                 addItem: () => { if(newItem.value.name && newItem.value.power){ appliances.value.unshift({id: Date.now(), ...newItem.value, active: true, slots: [...newItem.value.slots]}); newItem.value={name:'', type:'ac_inverter', power:null, slots:[]}; } },
                 deleteItem: (id) => { appliances.value = appliances.value.filter(a => a.id !== id); },
-                applyMagic: () => { appliances.value.unshift({id: Date.now(), name:'🪄 Magic Baseload', type:'watt', power:500, slots:Array.from({length:24},(_,i)=>i), active: true}); },
-                takeSnapshot: () => { html2canvas(document.querySelector("#report-area"), {backgroundColor: "#010409", scale: 2}).then(canvas => { let a = document.createElement('a'); a.download = `Solar-Report-V753.png`; a.href = canvas.toDataURL(); a.click(); }); },
+                applyMagic: () => { appliances.value.unshift({id: Date.now(), name:'🪄 Baseload', type:'watt', power:500, slots:Array.from({length:24},(_,i)=>i), active: true}); },
+                takeSnapshot: () => { html2canvas(document.querySelector("#report-area"), {backgroundColor: "#010409", scale: 2}).then(canvas => { let a = document.createElement('a'); a.download = `Solar-Report.png`; a.href = canvas.toDataURL(); a.click(); }); },
                 resetData: () => { if(confirm('Reset all?')) { localStorage.clear(); location.reload(); } }
             }
         }
