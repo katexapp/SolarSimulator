@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Solar Sim V.7.65 - The Pro Fusion</title>
+    <title>Solar Sim V.7.66 - The Missing Input</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -22,7 +22,7 @@
 <body class="md:p-6">
     <div id="app" v-cloak>
         <div class="fixed-toolbar flex flex-wrap gap-2 justify-end items-center no-print">
-            <div class="mr-auto hidden md:block text-yellow-500 font-black italic text-xs uppercase tracking-widest">Solar Sim V.7.65 PRO ENGINE</div>
+            <div class="mr-auto hidden md:block text-yellow-500 font-black italic text-xs uppercase tracking-widest">Solar Sim V.7.66 PRO ENGINE</div>
             <button @click="takeSnapshot" class="bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-black px-4 py-2 rounded-lg uppercase shadow-lg">📸 Save Image</button>
             <button onclick="window.print()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-black px-4 py-2 rounded-lg uppercase shadow-lg">🖨️ Print</button>
             <button @click="resetData" class="bg-red-600 hover:bg-red-500 text-white text-[10px] font-black px-4 py-2 rounded-lg uppercase shadow-lg">🧹 Reset</button>
@@ -81,7 +81,7 @@
                                     <p class="font-black text-xs uppercase leading-none mb-1">{{ item.name }}</p>
                                     <p class="text-[10px] font-bold text-indigo-400 uppercase">
                                         {{ (item.type.includes('ac')) ? formatNumber(item.power) + ' BTU' : formatNumber(item.power) + ' W' }} 
-                                        <span class="text-slate-500 font-normal">| {{ item.days || 30 }} Days</span>
+                                        <span class="text-slate-500 font-normal">| {{ item.days || 30 }} Days/Mo</span>
                                     </p>
                                 </div>
                                 <button @click.stop="deleteItem(item.id)" class="text-red-900 font-black text-lg px-2 no-print">×</button>
@@ -101,21 +101,23 @@
             <div class="border-t border-white/5 pt-4 space-y-4">
                 <input type="text" v-model="newItem.name" placeholder="Device Name" class="input-dark">
                 <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
-                    <div class="md:col-span-5"><select v-model="newItem.type" class="input-dark">
-                        <option value="ac_inverter">AC Inverter (BTU)</option>
-                        <option value="ac_standard">AC Standard (BTU)</option>
-                        <option value="fridge">Fridge (W)</option>
-                        <option value="computer">Computer (W)</option>
-                        <option value="ev">EV Charger (W)</option>
-                        <option value="watt">General (W)</option>
-                    </select></div>
+                    <div class="md:col-span-5">
+                        <select v-model="newItem.type" class="input-dark">
+                            <option value="ac_inverter">AC Inverter (BTU)</option>
+                            <option value="ac_standard">AC Standard (BTU)</option>
+                            <option value="fridge">Fridge (W)</option>
+                            <option value="computer">Computer (W)</option>
+                            <option value="ev">EV Charger (W)</option>
+                            <option value="watt">General (W)</option>
+                        </select>
+                    </div>
                     <div class="relative md:col-span-4">
                         <input type="number" v-model.number="newItem.power" :placeholder="newItem.type.includes('ac') ? 'BTU' : 'Watt'" class="input-dark pr-10">
                         <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-500 uppercase">{{ newItem.type.includes('ac') ? 'BTU' : 'W' }}</span>
                     </div>
                     <div class="relative md:col-span-3">
-                        <input type="number" v-model.number="newItem.days" placeholder="30" class="input-dark pr-12">
-                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] font-black text-slate-500 uppercase">Days/Mo</span>
+                        <input type="number" v-model.number="newItem.days" placeholder="30" class="input-dark pr-14 text-center">
+                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[9px] font-black text-slate-500 uppercase">Days</span>
                     </div>
                 </div>
                 <div class="bg-black/40 p-4 rounded-xl text-center">
@@ -145,17 +147,18 @@
             rawAppliances.forEach(a => { if(!a.days) a.days = 30; });
             const appliances = ref(rawAppliances);
             
+            // 🎯 กำหนดค่า Default 30 วัน
             const newItem = ref({name:'', type:'ac_inverter', power:null, days: 30, slots:[]});
             let chart = null;
 
             const formatNumber = (n) => Math.round(n).toLocaleString();
             const formatTime = (s) => `${String(Math.floor(s/4)).padStart(2,'0')}:${String((s%4)*15).padStart(2,'0')}`;
             
-            // 🎯 LOGIC SOLAR PRO (เป๊ะๆ ตามบิล)
+            // 🎯 LOGIC SOLAR PRO (หาร 25 เพื่อแปลง Inverter BTU เป็นโหลดเฉลี่ย 45%)
             const getActualWatts = (i) => {
                 if(!i.power) return 0;
                 switch(i.type) {
-                    case 'ac_inverter': return Math.round(i.power / 25); // 15000 BTU = 600W
+                    case 'ac_inverter': return Math.round(i.power / 25); // 15000 BTU / 25 = 600W
                     case 'ac_standard': return Math.round(i.power / 15);
                     case 'fridge': return Math.round(i.power * 0.40);
                     case 'computer': return Math.round(i.power * 0.50);
@@ -180,8 +183,8 @@
                     appliances.value.forEach(a => {
                         if(a.active && a.slots.includes(h)) {
                             const w = getActualWatts(a);
-                            loadChart += w; // For Chart (Peak Day)
-                            loadMonth += w * ((a.days || 30) / 30); // For Monthly Bill (Prorated)
+                            loadChart += w; // Load for the graph (Maximum Daily Load)
+                            loadMonth += w * ((a.days || 30) / 30); // Load for Monthly Bill (Averaged by days)
                         }
                     });
 
@@ -200,6 +203,7 @@
                     tL_month += (loadMonth/1000)*0.25;
                     tSv_month += stepSavedMonth;
 
+                    // Data array feeds the Chart and the slider displays
                     d.push({ solar: sol, load: loadChart, soc: cpWh>0?(stWhChart/cpWh*100):0, grid: Math.max(0, defChart-batChart), savedVal: stepSavedChart * rate.value });
                 }
                 return { steps: d, kpis: { sufficiency: Math.round((tSv_month/tL_month)*100)||0, wasted: tW_month.toFixed(1), savedKwh: tSv_month, totalLoadKwh: tL_month }};
@@ -232,7 +236,7 @@
                 monthlyOriginal: computed(() => Math.round(engine.value.kpis.totalLoadKwh * rate.value * 30)), monthlyNew: computed(() => Math.round((engine.value.kpis.totalLoadKwh - engine.value.kpis.savedKwh) * rate.value * 30)), monthlySavings: computed(() => Math.round(engine.value.kpis.savedKwh * rate.value * 30)),
                 formatNumber, formatTime, toggleNewHour: (h) => { const idx = newItem.value.slots.indexOf(h); if(idx > -1) newItem.value.slots.splice(idx, 1); else newItem.value.slots.push(h); },
                 toggleAllDay: () => { newItem.value.slots = newItem.value.slots.length === 24 ? [] : Array.from({length: 24}, (_, i) => i); },
-                addItem: () => { if(newItem.value.name && newItem.value.power){ appliances.value.unshift({id: Date.now(), ...newItem.value, active: true, slots: [...newItem.value.slots]}); newItem.value={name:'', type:'ac_inverter', power:null, days:30, slots:[]}; } },
+                addItem: () => { if(newItem.value.name && newItem.value.power){ appliances.value.unshift({id: Date.now(), ...newItem.value, active: true, slots: [...newItem.value.slots]}); newItem.value={name:'', type:'ac_inverter', power:null, days: 30, slots:[]}; } },
                 deleteItem: (id) => { appliances.value = appliances.value.filter(a => a.id !== id); },
                 moveUp: (i) => { if(i > 0) [appliances.value[i], appliances.value[i-1]] = [appliances.value[i-1], appliances.value[i]]; },
                 moveDown: (i) => { if(i < appliances.value.length - 1) [appliances.value[i], appliances.value[i+1]] = [appliances.value[i+1], appliances.value[i]]; },
