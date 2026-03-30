@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Solar Sim V.7.67 - Weather Master</title>
+    <title>Solar Sim V.7.68 - The Dual Engine</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -25,7 +25,7 @@
 <body class="md:p-6">
     <div id="app" v-cloak>
         <div class="fixed-toolbar flex flex-wrap gap-2 justify-end items-center no-print">
-            <div class="mr-auto hidden md:block text-yellow-500 font-black italic text-xs uppercase tracking-widest">Solar Sim V.7.67 PRO ENGINE</div>
+            <div class="mr-auto hidden md:block text-yellow-500 font-black italic text-xs uppercase tracking-widest">Solar Sim V.7.68 PRO BLEND</div>
             <button @click="takeSnapshot" class="bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-black px-4 py-2 rounded-lg uppercase shadow-lg">📸 Save Image</button>
             <button onclick="window.print()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-black px-4 py-2 rounded-lg uppercase shadow-lg">🖨️ Print</button>
             <button @click="resetData" class="bg-red-600 hover:bg-red-500 text-white text-[10px] font-black px-4 py-2 rounded-lg uppercase shadow-lg">🧹 Reset</button>
@@ -34,14 +34,14 @@
         <div id="report-area">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
                 <div>
-                    <h1 class="text-xl font-black italic text-yellow-400 uppercase tracking-tighter mb-4">SOLAR SIM <span class="text-white text-xs font-normal">WEATHER MASTER</span></h1>
+                    <h1 class="text-xl font-black italic text-yellow-400 uppercase tracking-tighter mb-4">SOLAR SIM <span class="text-white text-xs font-normal">REALITY ENGINE</span></h1>
                     <div class="grid grid-cols-2 gap-3">
-                        <div class="glass-card p-3 mb-0 text-center"><p class="text-[8px] text-slate-500 font-black uppercase">Efficiency</p><p class="text-2xl font-black text-blue-400">{{ sufficiency }}%</p></div>
-                        <div class="glass-card p-3 mb-0 text-center"><p class="text-[8px] text-slate-500 font-black uppercase">Overflow</p><p class="text-2xl font-black text-orange-500">{{ wasted }} <span class="text-xs">kWh</span></p></div>
+                        <div class="glass-card p-3 mb-0 text-center"><p class="text-[8px] text-slate-500 font-black uppercase">Monthly Efficiency</p><p class="text-2xl font-black text-blue-400">{{ monthlySufficiency }}%</p></div>
+                        <div class="glass-card p-3 mb-0 text-center"><p class="text-[8px] text-slate-500 font-black uppercase">Monthly Overflow</p><p class="text-2xl font-black text-orange-500">{{ monthlyWasted }} <span class="text-xs">kWh</span></p></div>
                     </div>
                 </div>
                 <div class="bill-card rounded-3xl p-6 border-t-4 border-emerald-500 shadow-2xl">
-                    <h3 class="text-xs font-black text-emerald-400 italic mb-2 uppercase">Estimate 30-Day Bill</h3>
+                    <h3 class="text-xs font-black text-emerald-400 italic mb-2 uppercase">Average 30-Day Bill</h3>
                     <div class="space-y-1">
                         <div class="flex justify-between"><span class="text-[10px] text-slate-400 uppercase">Current (Grid)</span><span class="text-lg font-black text-slate-400 line-through">฿{{ formatNumber(monthlyOriginal) }}</span></div>
                         <div class="flex justify-between border-b border-white/5 pb-1"><span class="text-[10px] text-emerald-400 font-bold uppercase">With Solar</span><span class="text-2xl font-black text-white">฿{{ formatNumber(monthlyNew) }}</span></div>
@@ -64,11 +64,22 @@
                             <button @click="weather='rainy'" :class="weather==='rainy'?'bg-blue-500 text-white border-white':'bg-slate-800 text-slate-400 border-white/5'" class="flex-1 py-2.5 rounded-xl font-black text-[10px] uppercase shadow-lg transition-all border">🌧️ Rainy (25%)</button>
                         </div>
 
+                        <div class="grid grid-cols-2 gap-4 mb-6 pb-6 border-b border-white/10">
+                            <div class="bg-emerald-500/10 border border-emerald-500/30 p-4 rounded-2xl text-center">
+                                <p class="text-[10px] text-emerald-400 font-black uppercase tracking-widest">Today's Savings</p>
+                                <p class="text-3xl font-black text-emerald-400 mt-1">฿{{ engine.daily.savedBaht.toFixed(2) }}</p>
+                            </div>
+                            <div class="bg-red-500/10 border border-red-500/30 p-4 rounded-2xl text-center">
+                                <p class="text-[10px] text-red-400 font-black uppercase tracking-widest">Today's Grid Cost</p>
+                                <p class="text-3xl font-black text-red-400 mt-1">฿{{ engine.daily.paidBaht.toFixed(2) }}</p>
+                            </div>
+                        </div>
+
                         <div class="flex justify-between items-center">
                             <h2 class="text-6xl font-black text-white leading-none tracking-tighter">{{formatTime(selectedStep)}}</h2>
                             <div class="text-right">
-                                <p class="text-emerald-400 font-black text-xl">฿{{(currentData.savedVal).toFixed(2)}} saved</p>
-                                <p class="text-red-400 font-bold text-sm">฿{{(currentData.grid/1000*rate).toFixed(2)}} paid</p>
+                                <p class="text-emerald-400 font-black text-lg">฿{{(currentData.savedVal).toFixed(2)}} /hr</p>
+                                <p class="text-slate-400 font-bold text-xs">฿{{(currentData.grid/1000*rate).toFixed(2)}} /hr</p>
                             </div>
                         </div>
                         <input type="range" v-model="selectedStep" min="0" max="95" class="w-full h-2 bg-slate-800 rounded-full appearance-none mt-6 cursor-pointer no-print">
@@ -154,7 +165,7 @@
             const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
             const selectedStep = ref(saved.selectedStep || 48), rate = ref(saved.rate || 4.65);
             const solarKw = ref(saved.solarKw || 5.0), batteryKwh = ref(saved.batteryKwh || 10.0);
-            const weather = ref(saved.weather || 'sunny'); // 🎯 โหลดค่าสภาพอากาศ
+            const weather = ref(saved.weather || 'sunny');
             
             const rawAppliances = saved.appliances || [];
             rawAppliances.forEach(a => { if(!a.days) a.days = 30; });
@@ -177,57 +188,61 @@
                 }
             };
 
-            // 🎯 ผสม Weather Factor เข้าไปในกราฟการผลิตไฟ
-            const getSolarOutput = (s) => {
-                const h_f = s/4; if(h_f < 6 || h_f > 18) return 0;
-                
-                let weatherMultiplier = 1.0;
-                if(weather.value === 'cloudy') weatherMultiplier = 0.60;
-                if(weather.value === 'rainy') weatherMultiplier = 0.25;
-
-                return solarKw.value * 940 * Math.pow(Math.sin((h_f-6)*Math.PI/12), 1.2) * weatherMultiplier;
-            };
-
             const engine = computed(() => {
-                let d = [], stWhChart = 0, stWhMonth = 0;
+                // 🧠 แยกเป็น 2 Engine เพื่อความสมจริง
+                let d_steps = [], d_stWh = 0, m_stWh = 0;
                 const cpWh = batteryKwh.value * 1000;
-                let tL_month = 0, tSv_month = 0, tW_month = 0;
+                
+                // สำหรับรายวัน (ตามปุ่มสภาพอากาศ)
+                let d_tL = 0, d_tSv = 0, d_tGrid = 0;
+                let weatherMultiplier = weather.value === 'cloudy' ? 0.60 : (weather.value === 'rainy' ? 0.25 : 1.0);
+                
+                // สำหรับรายเดือน (สมมติแดดเฉลี่ยไทย 85% ของประสิทธิภาพทั้งหมด)
+                let m_tL = 0, m_tSv = 0, m_tW = 0;
+                const blendedMultiplier = 0.85;
 
                 for(let s = 0; s <= 95; s++) {
-                    const h = Math.floor(s/4), sol = getSolarOutput(s);
+                    const h = Math.floor(s/4), h_f = s/4;
+                    const baseSol = (h_f >= 6 && h_f <= 18) ? solarKw.value * 940 * Math.pow(Math.sin((h_f-6)*Math.PI/12), 1.2) : 0;
                     
-                    let loadChart = 0, loadMonth = 0;
-                    appliances.value.forEach(a => {
-                        if(a.active && a.slots.includes(h)) {
-                            const w = getActualWatts(a);
-                            loadChart += w;
-                            loadMonth += w * ((a.days || 30) / 30);
-                        }
-                    });
+                    // --- ENGINE 1: SIMULATION รายวัน (แสดงกราฟ) ---
+                    const d_sol = baseSol * weatherMultiplier;
+                    let d_load = 0;
+                    appliances.value.forEach(a => { if(a.active && a.slots.includes(h)) d_load += getActualWatts(a); });
+                    
+                    const d_def = d_load - d_sol; let d_bat = 0;
+                    if(d_def > 0) { d_bat = Math.min(d_def, d_stWh * 0.95); d_stWh -= (d_bat/0.95); }
+                    else { const ch = Math.min(Math.abs(d_def)*0.95, cpWh-d_stWh); d_stWh += ch; }
+                    
+                    const d_stepSv = ((Math.min(d_load, d_sol) + d_bat) / 1000) * 0.25;
+                    const d_stepGrid = Math.max(0, d_def - d_bat) / 1000 * 0.25;
+                    
+                    d_tL += (d_load/1000)*0.25; d_tSv += d_stepSv; d_tGrid += d_stepGrid;
+                    d_steps.push({ s, solar: d_sol, load: d_load, soc: cpWh>0?(d_stWh/cpWh*100):0, grid: Math.max(0, d_def-d_bat), savedVal: d_stepSv * rate.value });
 
-                    // 1. Chart Simulation (Real-time single day)
-                    const defChart = loadChart - sol; let batChart = 0;
-                    if (defChart > 0) { batChart = Math.min(defChart, stWhChart * 0.95); stWhChart -= (batChart/0.95); }
-                    else { const ch = Math.min(Math.abs(defChart)*0.95, cpWh-stWhChart); stWhChart += ch; }
-                    const stepSavedChart = ((Math.min(loadChart, sol) + batChart) / 1000) * 0.25;
-
-                    // 2. Monthly Simulation (Averaged by usage days)
-                    const defMonth = loadMonth - sol; let batMonth = 0;
-                    if (defMonth > 0) { batMonth = Math.min(defMonth, stWhMonth * 0.95); stWhMonth -= (batMonth/0.95); }
-                    else { const ch = Math.min(Math.abs(defMonth)*0.95, cpWh-stWhMonth); stWhMonth += ch; tW_month += ((Math.abs(defMonth)*0.95-ch)/1000)*0.25; }
-                    const stepSavedMonth = ((Math.min(loadMonth, sol) + batMonth) / 1000) * 0.25;
-
-                    tL_month += (loadMonth/1000)*0.25;
-                    tSv_month += stepSavedMonth;
-
-                    d.push({ solar: sol, load: loadChart, soc: cpWh>0?(stWhChart/cpWh*100):0, grid: Math.max(0, defChart-batChart), savedVal: stepSavedChart * rate.value });
+                    // --- ENGINE 2: SIMULATION รายเดือน (ใช้คิดบิลขวาบน) ---
+                    const m_sol = baseSol * blendedMultiplier;
+                    let m_load = 0;
+                    // เฉลี่ยโหลดตามจำนวนวันที่ใช้ (เช่น ใช้ 3 วัน ก็ดึงมาแค่ 3/30 ของโหลดจริง)
+                    appliances.value.forEach(a => { if(a.active && a.slots.includes(h)) m_load += getActualWatts(a) * ((a.days || 30) / 30); });
+                    
+                    const m_def = m_load - m_sol; let m_bat = 0;
+                    if(m_def > 0) { m_bat = Math.min(m_def, m_stWh * 0.95); m_stWh -= (m_bat/0.95); }
+                    else { const ch = Math.min(Math.abs(m_def)*0.95, cpWh-m_stWh); m_stWh += ch; m_tW += ((Math.abs(m_def)*0.95-ch)/1000)*0.25; }
+                    
+                    const m_stepSv = ((Math.min(m_load, m_sol) + m_bat) / 1000) * 0.25;
+                    m_tL += (m_load/1000)*0.25; m_tSv += m_stepSv;
                 }
-                return { steps: d, kpis: { sufficiency: Math.round((tSv_month/tL_month)*100)||0, wasted: tW_month.toFixed(1), savedKwh: tSv_month, totalLoadKwh: tL_month }};
+                
+                return { 
+                    steps: d_steps, 
+                    daily: { savedBaht: d_tSv * rate.value, paidBaht: d_tGrid * rate.value },
+                    monthly: { loadKwh: m_tL * 30, savedKwh: m_tSv * 30, wasted: (m_tW * 30).toFixed(1), sufficiency: Math.round((m_tSv/m_tL)*100)||0 }
+                };
             });
 
             const sync = () => localStorage.setItem(STORAGE_KEY, JSON.stringify({ rate: rate.value, solarKw: solarKw.value, batteryKwh: batteryKwh.value, appliances: appliances.value, selectedStep: selectedStep.value, weather: weather.value }));
             
-            // 🎯 สั่ง Watch เพิ่มตัวแปร Weather
             watch([rate, solarKw, batteryKwh, selectedStep, weather, appliances], () => { 
                 sync(); if(chart) { 
                     const d = engine.value.steps;
@@ -263,9 +278,13 @@
             });
 
             return {
-                selectedStep, rate, solarKw, batteryKwh, appliances, newItem, weather, // 🎯 Return weather ให้ UI ใช้
-                sufficiency: computed(() => engine.value.kpis.sufficiency), wasted: computed(() => engine.value.kpis.wasted), currentData: computed(() => engine.value.steps[selectedStep.value]),
-                monthlyOriginal: computed(() => Math.round(engine.value.kpis.totalLoadKwh * rate.value * 30)), monthlyNew: computed(() => Math.round((engine.value.kpis.totalLoadKwh - engine.value.kpis.savedKwh) * rate.value * 30)), monthlySavings: computed(() => Math.round(engine.value.kpis.savedKwh * rate.value * 30)),
+                selectedStep, rate, solarKw, batteryKwh, appliances, newItem, weather, engine,
+                monthlySufficiency: computed(() => engine.value.monthly.sufficiency),
+                monthlyWasted: computed(() => engine.value.monthly.wasted),
+                currentData: computed(() => engine.value.steps[selectedStep.value]),
+                monthlyOriginal: computed(() => Math.round(engine.value.monthly.loadKwh * rate.value)), 
+                monthlyNew: computed(() => Math.round((engine.value.monthly.loadKwh - engine.value.monthly.savedKwh) * rate.value)), 
+                monthlySavings: computed(() => Math.round(engine.value.monthly.savedKwh * rate.value)),
                 formatNumber, formatTime, 
                 toggleNewHour: (h) => { const idx = newItem.value.slots.indexOf(h); if(idx > -1) newItem.value.slots.splice(idx, 1); else newItem.value.slots.push(h); },
                 toggleAllDay: () => { newItem.value.slots = newItem.value.slots.length === 24 ? [] : Array.from({length: 24}, (_, i) => i); },
