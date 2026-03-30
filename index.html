@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Solar Sim V.7.69 - UI Refinement</title>
+    <title>Solar Sim V.7.70 - Polished Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -20,7 +20,6 @@
         .fixed-toolbar { background: rgba(22, 27, 34, 0.95); border-bottom: 1px solid #30363d; position: sticky; top: 0; z-index: 1000; padding: 12px; margin: -10px -10px 20px -10px; backdrop-filter: blur(10px); }
         .drag-handle { cursor: grab !important; color: #fbbf24; font-size: 18px; padding-right: 12px; user-select: none; }
         .sortable-ghost { opacity: 0.3; background: #fbbf24 !important; }
-        /* 🎯 แก้ให้กรอบ Appliance ยืดตามจำนวนอุปกรณ์ */
         .appliance-container { height: auto !important; min-height: 450px; }
         [v-cloak] { display: none; }
     </style>
@@ -28,7 +27,7 @@
 <body class="md:p-6 text-left">
     <div id="app" v-cloak>
         <div class="fixed-toolbar flex flex-wrap gap-2 justify-end items-center no-print">
-            <div class="mr-auto hidden md:block text-yellow-500 font-black italic text-xs uppercase tracking-widest">Solar Sim V.7.69 PRO BLEND</div>
+            <div class="mr-auto hidden md:block text-yellow-500 font-black italic text-xs uppercase tracking-widest">Solar Sim V.7.70</div>
             <button @click="takeSnapshot" class="bg-blue-600 hover:bg-blue-500 text-white text-[10px] font-black px-4 py-2 rounded-lg uppercase shadow-lg">📸 Save Image</button>
             <button onclick="window.print()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-black px-4 py-2 rounded-lg uppercase shadow-lg">🖨️ Print</button>
             <button @click="resetData" class="bg-red-600 hover:bg-red-500 text-white text-[10px] font-black px-4 py-2 rounded-lg uppercase shadow-lg">🧹 Reset</button>
@@ -81,8 +80,8 @@
                         <div class="flex justify-between items-center">
                             <h2 class="text-6xl font-black text-white leading-none tracking-tighter">{{formatTime(selectedStep)}}</h2>
                             <div class="text-right">
-                                <p class="text-emerald-400 font-black text-lg"><span class="text-[10px] uppercase opacity-60">Saved:</span> ฿{{(currentData.savedVal).toFixed(2)}}</p>
-                                <p class="text-slate-400 font-bold text-xs"><span class="text-[9px] uppercase opacity-60">Paid:</span> ฿{{(currentData.grid/1000*rate).toFixed(2)}}</p>
+                                <p class="text-emerald-400 font-black text-lg"><span class="text-[10px] uppercase opacity-60">Saved:</span> ฿{{(currentData.savedVal).toFixed(2)}} <span class="text-[10px] opacity-60">/hr</span></p>
+                                <p class="text-slate-400 font-bold text-xs"><span class="text-[9px] uppercase opacity-60">Paid:</span> ฿{{(currentData.grid/1000*rate).toFixed(2)}} <span class="text-[9px] opacity-60">/hr</span></p>
                             </div>
                         </div>
                         <input type="range" v-model="selectedStep" min="0" max="95" class="sun-slider w-full h-2 bg-slate-800 rounded-full appearance-none mt-6 cursor-pointer no-print">
@@ -169,11 +168,7 @@
             const selectedStep = ref(saved.selectedStep || 48), rate = ref(saved.rate || 4.65);
             const solarKw = ref(saved.solarKw || 5.0), batteryKwh = ref(saved.batteryKwh || 10.0);
             const weather = ref(saved.weather || 'sunny');
-            
-            const rawAppliances = saved.appliances || [];
-            rawAppliances.forEach(a => { if(!a.days) a.days = 30; });
-            const appliances = ref(rawAppliances);
-            
+            const appliances = ref(saved.appliances || []);
             const newItem = ref({name:'', type:'ac_inverter', power:null, days: 30, slots:[]});
             let chart = null;
 
@@ -191,26 +186,22 @@
                 }
             };
 
-            const getSolarOutput = (s) => {
+            const getSolarOutput = (s, customWeather = null) => {
                 const h_f = s/4; if(h_f < 6 || h_f > 18) return 0;
-                let weatherMultiplier = weather.value === 'cloudy' ? 0.60 : (weather.value === 'rainy' ? 0.25 : 1.0);
-                return solarKw.value * 940 * Math.pow(Math.sin((h_f-6)*Math.PI/12), 1.2) * weatherMultiplier;
+                const weatherVal = customWeather || weather.value;
+                const multiplier = weatherVal === 'cloudy' ? 0.60 : (weatherVal === 'rainy' ? 0.25 : 1.0);
+                // ☀️ 🎯 Bell Curve Fix: ปรับเลขยกกำลังเป็น 1.4 เพื่อความสวยสมบูรณ์แบบ
+                return solarKw.value * 940 * Math.pow(Math.sin((h_f-6)*Math.PI/12), 1.4) * multiplier;
             };
 
             const engine = computed(() => {
-                let d_steps = [], d_stWh = 0, m_stWh = 0;
-                const cpWh = batteryKwh.value * 1000;
-                let d_tSv = 0, d_tGrid = 0;
-                let m_tL = 0, m_tSv = 0, m_tW = 0;
+                let d_steps = [], d_stWh = 0, m_stWh = 0, cpWh = batteryKwh.value * 1000;
+                let d_tSv = 0, d_tGrid = 0, m_tL = 0, m_tSv = 0, m_tW = 0;
                 const blendedMultiplier = 0.85;
 
                 for(let s = 0; s <= 95; s++) {
                     const h = Math.floor(s/4), h_f = s/4;
-                    const baseSol = (h_f >= 6 && h_f <= 18) ? solarKw.value * 940 * Math.pow(Math.sin((h_f-6)*Math.PI/12), 1.2) : 0;
-                    
-                    // Daily (for graph)
-                    const weatherMultiplier = weather.value === 'cloudy' ? 0.60 : (weather.value === 'rainy' ? 0.25 : 1.0);
-                    const d_sol = baseSol * weatherMultiplier;
+                    const d_sol = getSolarOutput(s);
                     let d_load = 0;
                     appliances.value.forEach(a => { if(a.active && a.slots.includes(h)) d_load += getActualWatts(a); });
                     const d_def = d_load - d_sol; let d_bat = 0;
@@ -221,8 +212,8 @@
                     d_tSv += d_stepSv; d_tGrid += d_stepGrid;
                     d_steps.push({ solar: d_sol, load: d_load, soc: cpWh>0?(d_stWh/cpWh*100):0, grid: Math.max(0, d_def-d_bat), savedVal: d_stepSv * rate.value });
 
-                    // Monthly (for KPIs)
-                    const m_sol = baseSol * blendedMultiplier;
+                    // Engine Monthly
+                    const m_sol = (h_f >= 6 && h_f <= 18) ? solarKw.value * 940 * Math.pow(Math.sin((h_f-6)*Math.PI/12), 1.4) * blendedMultiplier : 0;
                     let m_load = 0;
                     appliances.value.forEach(a => { if(a.active && a.slots.includes(h)) m_load += getActualWatts(a) * ((a.days || 30) / 30); });
                     const m_def = m_load - m_sol; let m_bat = 0;
@@ -230,54 +221,33 @@
                     else { const ch = Math.min(Math.abs(m_def)*0.95, cpWh-m_stWh); m_stWh += ch; m_tW += ((Math.abs(m_def)*0.95-ch)/1000)*0.25; }
                     m_tL += (m_load/1000)*0.25; m_tSv += ((Math.min(m_load, m_sol) + m_bat) / 1000) * 0.25;
                 }
-                return { 
-                    steps: d_steps, 
-                    daily: { savedBaht: d_tSv * rate.value, paidBaht: d_tGrid * rate.value },
-                    monthly: { loadKwh: m_tL * 30, savedKwh: m_tSv * 30, wasted: (m_tW * 30).toFixed(1), sufficiency: Math.round((m_tSv/m_tL)*100)||0 }
-                };
+                return { steps: d_steps, daily: { savedBaht: d_tSv * rate.value, paidBaht: d_tGrid * rate.value }, monthly: { loadKwh: m_tL * 30, savedKwh: m_tSv * 30, wasted: (m_tW * 30).toFixed(1), sufficiency: Math.round((m_tSv/m_tL)*100)||0 }};
             });
 
             const sync = () => localStorage.setItem(STORAGE_KEY, JSON.stringify({ rate: rate.value, solarKw: solarKw.value, batteryKwh: batteryKwh.value, appliances: appliances.value, selectedStep: selectedStep.value, weather: weather.value }));
-            watch([rate, solarKw, batteryKwh, selectedStep, weather, appliances], () => { 
-                sync(); if(chart) { const d = engine.value.steps; chart.data.datasets[0].data = d.map(x=>x.solar); chart.data.datasets[1].data = d.map(x=>x.load); chart.data.datasets[2].data = d.map(x=>x.soc); chart.update('none'); } 
-            }, {deep:true});
+            watch([rate, solarKw, batteryKwh, selectedStep, weather, appliances], () => { sync(); if(chart) { const d = engine.value.steps; chart.data.datasets[0].data = d.map(x=>x.solar); chart.data.datasets[1].data = d.map(x=>x.load); chart.data.datasets[2].data = d.map(x=>x.soc); chart.update('none'); } }, {deep:true});
 
             onMounted(() => {
                 const ctx = document.getElementById('proChart').getContext('2d');
                 chart = new Chart(ctx, { type: 'line', data: { labels: engine.value.steps.map((_,idx)=>formatTime(idx)), datasets: [
-                    { label: 'PV', borderColor: '#fbbf24', data: [], fill: true, tension: 0.4, pointRadius: 0, backgroundColor: 'rgba(251, 191, 36, 0.1)' },
+                    { label: 'PV', borderColor: '#fbbf24', data: [], fill: true, tension: 0.4, pointRadius: 0, backgroundColor: 'rgba(251, 191, 36, 0.05)' },
                     { label: 'Load', borderColor: '#60a5fa', data: [], tension: 0.3, pointRadius: 0 },
                     { label: 'SOC', borderColor: '#8b5cf6', data: [], yAxisID: 'y1', borderDash: [3, 3], pointRadius: 0 }
                 ]}, options: { responsive: true, maintainAspectRatio: false, animation: false, scales: { y1: { position: 'right', min: 0, max: 100, display: true, ticks: { color: '#8b5cf6' } } } }});
                 const d = engine.value.steps; chart.data.datasets[0].data = d.map(x=>x.solar); chart.data.datasets[1].data = d.map(x=>x.load); chart.data.datasets[2].data = d.map(x=>x.soc); chart.update();
-
-                nextTick(() => {
-                    Sortable.create(document.getElementById('drag-list'), {
-                        handle: '.drag-handle', animation: 200, ghostClass: 'sortable-ghost',
-                        onEnd: (evt) => {
-                            const list = [...appliances.value];
-                            const item = list.splice(evt.oldIndex, 1)[0];
-                            list.splice(evt.newIndex, 0, item);
-                            appliances.value = list;
-                        }
-                    });
-                });
+                nextTick(() => { if (typeof Sortable !== 'undefined') { Sortable.create(document.getElementById('drag-list'), { handle: '.drag-handle', animation: 200, ghostClass: 'sortable-ghost', onEnd: (evt) => { const list = [...appliances.value]; const item = list.splice(evt.oldIndex, 1)[0]; list.splice(evt.newIndex, 0, item); appliances.value = list; } }); } });
             });
 
             return {
                 selectedStep, rate, solarKw, batteryKwh, appliances, newItem, weather, engine,
-                monthlySufficiency: computed(() => engine.value.monthly.sufficiency),
-                monthlyWasted: computed(() => engine.value.monthly.wasted),
-                currentData: computed(() => engine.value.steps[selectedStep.value]),
-                monthlyOriginal: computed(() => Math.round(engine.value.monthly.loadKwh * rate.value)), 
-                monthlyNew: computed(() => Math.round((engine.value.monthly.loadKwh - engine.value.monthly.savedKwh) * rate.value)), 
-                monthlySavings: computed(() => Math.round(engine.value.monthly.savedKwh * rate.value)),
+                monthlySufficiency: computed(() => engine.value.monthly.sufficiency), monthlyWasted: computed(() => engine.value.monthly.wasted), currentData: computed(() => engine.value.steps[selectedStep.value]),
+                monthlyOriginal: computed(() => Math.round(engine.value.monthly.loadKwh * rate.value)), monthlyNew: computed(() => Math.round((engine.value.monthly.loadKwh - engine.value.monthly.savedKwh) * rate.value)), monthlySavings: computed(() => Math.round(engine.value.monthly.savedKwh * rate.value)),
                 formatNumber, formatTime, toggleNewHour: (h) => { const idx = newItem.value.slots.indexOf(h); if(idx > -1) newItem.value.slots.splice(idx, 1); else newItem.value.slots.push(h); },
                 toggleAllDay: () => { newItem.value.slots = newItem.value.slots.length === 24 ? [] : Array.from({length: 24}, (_, i) => i); },
                 addItem: () => { if(newItem.value.name && newItem.value.power){ appliances.value.unshift({id: Date.now(), ...newItem.value, active: true, slots: [...newItem.value.slots], days: newItem.value.days || 30}); newItem.value={name:'', type:'ac_inverter', power:null, days: 30, slots:[]}; } },
                 deleteItem: (id) => { appliances.value = appliances.value.filter(a => a.id !== id); },
                 applyMagic: () => { appliances.value.unshift({id: Date.now(), name:'🪄 Baseload', type:'watt', power:500, days: 30, slots:Array.from({length:24},(_,i)=>i), active: true}); },
-                takeSnapshot: () => { html2canvas(document.querySelector("#report-area"), {backgroundColor: "#010409", scale: 2, useCORS: true}).then(canvas => { let a = document.createElement('a'); a.download = `Solar-Report.png`; a.href = canvas.toDataURL(); a.click(); }); },
+                takeSnapshot: () => { html2canvas(document.querySelector("#report-area"), {backgroundColor: "#010409", scale: 2, useCORS: true}).then(canvas => { let a = document.createElement('a'); a.download = `Solar-Sim-V770.png`; a.href = canvas.toDataURL(); a.click(); }); },
                 resetData: () => { if(confirm('ต้องการล้างข้อมูลใหม่หมด?')) { localStorage.clear(); location.reload(); } }
             }
         }
